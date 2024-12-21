@@ -1,6 +1,12 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Deploy Docusaurus to GitHub Pages
 
+# Add these permissions at the top level
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   push:
     branches:
