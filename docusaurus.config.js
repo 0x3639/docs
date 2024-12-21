@@ -94,6 +94,22 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
+          {
+            label: 'Explorer',
+            position: 'left',
+            items: [
+              {
+                label: 'Zenon Explorer',
+                href: 'https://explorer.zenon.network',
+                target: '_blank',
+              },
+              {
+                label: 'ZenonHub Explorer',
+                href: 'https://zenonhub.io/explorer',
+                target: '_blank',
+              },
+            ],
+          },
         ],
       },
       footer: {
@@ -134,7 +150,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/0x3639/docs',
               },
             ],
           },
