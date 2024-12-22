@@ -5,7 +5,7 @@
  */
 
 /* You can override the default Infima variables here. */
-:root {
+/* :root {
   --ifm-color-primary: #00e721;
   --ifm-color-primary-dark: #00d01e;
   --ifm-color-primary-darker: #00c41c;
@@ -14,34 +14,40 @@
   --ifm-color-primary-lighter: #0aff2d;
   --ifm-color-primary-lightest: #2bff49;
   --ifm-background-color: #0a0b0c;
-  --ifm-navbar-background-color: #0a0b0c;
-  --ifm-footer-background-color: #0a0b0c;
   --ifm-font-color-base: #ffffff;
   --ifm-navbar-link-color: #ffffff;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-}
+  --ifm-navbar-background-color: #0a0b0c;
+  --ifm-footer-background-color: #0a0b0c;
+} */
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: #6cef4b;
+  --ifm-color-primary-dark: #54ec2e;
+  --ifm-color-primary-darker: #49eb20;
+  --ifm-color-primary-darkest: #37ca12;
+  --ifm-color-primary-light: #84f268;
+  --ifm-color-primary-lighter: #8ff376;
+  --ifm-color-primary-lightest: #b3f7a2;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-  --ifm-background-color: #0a0b0c;
-  --ifm-navbar-background-color: #0a0b0c;
-  --ifm-footer-background-color: #0a0b0c;
+  --ifm-background-color: #151515;
   --ifm-font-color-base: #ffffff;
 }
 
-.footer {
-  background-color: #0a0b0c;
+/* Change main background color */
+.main-wrapper {
+  background-color: var(--ifm-background-color) !important;
 }
 
+/* Add a subtle border to the bottom of the navbar */
 .navbar {
-  background-color: #0a0b0c;
+  background-color: var(--ifm-background-color) !important;
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+}
+
+.footer {
+  --ifm-footer-background-color: var(--ifm-background-color) !important;
+  border-top: 1px solid var(--ifm-toc-border-color);
 }
