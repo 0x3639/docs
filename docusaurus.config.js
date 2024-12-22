@@ -78,9 +78,8 @@ const config = {
             position: 'left',
             label: 'Tutorial',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/zenon-network',
             label: 'GitHub',
             position: 'right',
           },
@@ -127,7 +126,7 @@ const config = {
               },
               {
                 label: 'X',
-                href: 'https://x.com/zenon-network',
+                href: 'https://x.com/zenon_network',
               },
             ],
           },
