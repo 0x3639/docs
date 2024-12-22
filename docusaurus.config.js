@@ -73,10 +73,9 @@ const config = {
         },
         items: [
           {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
+            label: 'Intro',
             position: 'left',
-            label: 'Tutorial',
+            to: '/intro',
           },
           {
             href: 'https://github.com/zenon-network',
@@ -108,8 +107,8 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/intro',
+                label: 'Intro',
+                to: '/intro',
               },
             ],
           },

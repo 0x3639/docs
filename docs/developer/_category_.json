@@ -1,0 +1,12 @@
+{
+  "label": "Developer",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Developer docs and tools.",
+    "slug": "/developer"
+  },
+  "customProps": {
+    "sidebar_is_category_link": true
+  }
+} 

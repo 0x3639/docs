@@ -1,7 +1,10 @@
 ---
 slug: /
+sidebar_position: 1
+sidebar_label: Home
+title: Home
 ---
 
-# Introduction
+# Zenon Network
 
 Welcome to the documentation. This is your intro page.
