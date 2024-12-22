@@ -10,7 +10,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Zenon Documentation',
+  title: 'Zenon Network Documentation',
   tagline: 'Network of Momentum Documentation',
   favicon: 'img/favicon.ico',
 
@@ -140,7 +140,7 @@ const config = {
               },
               {
                 label: 'X',
-                href: 'https://x.com/docusaurus',
+                href: 'https://x.com/zenon-network',
               },
             ],
           },

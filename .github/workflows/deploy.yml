@@ -28,6 +28,11 @@ jobs:
         with:
           node-version: 18
 
+      - name: Clear Docusaurus Cache
+        run: |
+          rm -rf .docusaurus
+          rm -rf build
+
       - name: Install Dependencies
         run: npm ci
 
