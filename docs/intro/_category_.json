@@ -1,11 +1,6 @@
 {
   "label": "Intro",
   "position": 2,
-  "link": {
-    "type": "generated-index",
-    "description": "Learn the fundamentals and get started with our documentation.",
-    "slug": "/intro"
-  },
   "customProps": {
     "sidebar_is_category_link": true
   }
