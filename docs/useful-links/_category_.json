@@ -1,0 +1,12 @@
+{
+  "label": "Useful Links",
+  "position": 10,
+  "link": {
+    "type": "generated-index",
+    "description": "Desktop and Mobile Wallets.",
+    "slug": "/useful-links"
+  },
+  "customProps": {
+    "sidebar_is_category_link": true
+  }
+} 

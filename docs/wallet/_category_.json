@@ -1,0 +1,12 @@
+{
+  "label": "Wallet",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Desktop and Mobile Wallets.",
+    "slug": "/wallet"
+  },
+  "customProps": {
+    "sidebar_is_category_link": true
+  }
+} 
