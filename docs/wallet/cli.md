@@ -1,22 +1,58 @@
 ---
-sidebar_position: 7
-slug: cli
-title: ZNN-CLI
+sidebar_position: 2
+slug: dart-cli
+title: Dart CLI Wallet
 ---
 
-# Zenon CLI tool
+# Zenon CLI for Dart - Developer Guide
 
-## Basic usage
+## Introduction
 
+The Zenon CLI tool is designed to interact with the Network of Momentum Alphanet. This guide provides detailed information on how to use the CLI and its various functions with examples.
+
+## Building
+
+To build the project from source, follow these steps:
+
+1. Clone the repository:
 ```bash
-./znn-cli --help
-#will print all the available commands.
+git clone https://github.com/zenon-network/znn_cli_dart.git
 ```
 
+2. Change into the project directory:
 ```bash
-USAGE:
-  znn-cli [OPTIONS] [FLAGS]
+cd znn_cli_dart
+```
 
+3. Build the project for your platform:
+
+- **Windows:**
+```bash
+make windows
+```
+
+- **Linux:**
+```bash
+make linux
+```
+
+The compiled binary will be available in the `build` directory.
+
+## Download Precompiled Binary (Optional) 
+
+Download and extract the [latest CLI version](https://github.com/zenon-network/znn_cli_dart/releases/).
+
+## Usage
+
+The general usage pattern for the Zenon CLI is:
+
+```sh
+znn-cli [OPTIONS] [FLAGS]
+```
+
+### Flags and Options
+
+```bash
 FLAGS:
 -u, --url           Provide a websocket znnd connection URL with a port
                     (defaults to "ws://127.0.0.1:35998")
@@ -30,17 +66,24 @@ FLAGS:
 
 OPTIONS:
   General
-    send toAddress amount [ZNN/QSR/ZTS]
+    send toAddress amount [ZNN/QSR/ZTS message]
     receive blockHash
     receiveAll
+    autoreceive
     unreceived
     unconfirmed
-    balance
+    balance address
     frontierMomentum
+    createHash [hashType preimageLength]
     version
+  Stats
+    stats.networkInfo
+    stats.osInfo
+    stats.processInfo
+    stats.syncInfo
   Plasma
     plasma.list [pageIndex pageCount]
-    plasma.get
+    plasma.get address
     plasma.fuse toAddress amount (in QSR)
     plasma.cancel id
   Sentinel
@@ -48,6 +91,7 @@ OPTIONS:
     sentinel.register
     sentinel.revoke
     sentinel.collect
+    sentinel.depositQsr
     sentinel.withdrawQsr
   Staking
     stake.list [pageIndex pageCount]
@@ -61,6 +105,7 @@ OPTIONS:
     pillar.delegate name
     pillar.undelegate
     pillar.collect
+    pillar.depositQsr
     pillar.withdrawQsr
   ZTS Tokens
     token.list [pageIndex pageCount]
@@ -78,13 +123,69 @@ OPTIONS:
     wallet.dumpMnemonic
     wallet.deriveAddresses start end
     wallet.export filePath
+  Accelerator-Z
+    az.donate amount ZNN/QSR
+  Spork
+    spork.list
+    spork.create name description
+    spork.activate id
+  HTLC
+    htlc.create hashLockedAddress tokenStandard amount expirationTime (in hours) [hashType hashLock]
+    htlc.unlock id preimage
+    htlc.reclaim id
+    htlc.get id
+    htlc.inspect blockHash
+    htlc.getProxyStatus address
+    htlc.denyProxy
+    htlc.allowProxy
+    htlc.monitor id
+  Bridge
+    bridge.info
+    bridge.security
+    bridge.timeChallenges
+    bridge.orchestratorInfo
+    bridge.fees [tokenStandard]
+    bridge.network.list
+    bridge.network.get networkClass chainId
+    bridge.wrap.token networkClass chainId toAddress amount tokenStandard
+    bridge.wrap.list
+    bridge.wrap.listByAddress address [networkClass chainId]
+    bridge.wrap.listUnsigned
+    bridge.wrap.get id
+    bridge.unwrap.redeem transactionHash logIndex
+    bridge.unwrap.redeemAll [bool]
+    bridge.unwrap.list
+    bridge.unwrap.listByAddress toAddress
+    bridge.unwrap.listUnredeemed [toAddress]
+    bridge.unwrap.get transactionHash logIndex
+    bridge.guardian.proposeAdmin address
+  Liquidity
+    liquidity.info
+    liquidity.security
+    liquidity.timeChallenges
+    liquidity.getRewardTotal address
+    liquidity.getStakeEntries address
+    liquidity.getUncollectedReward address
+    liquidity.stake duration (in months) amount tokenStandard
+    liquidity.cancelStake id
+    liquidity.collectRewards
+    liquidity.guardian.proposeAdmin address
+  Orchestrator
+    orchestrator.changePubKey
+    orchestrator.haltBridge
+    orchestrator.updateWrapRequest
+    orchestrator.unwrapToken
 ```
 
 ### Check the version
 
+Command:
 ```bash
 ./znn-cli version
+```
 
+Output:
+```
 znn-cli v0.0.1 using Zenon SDK v0.0.1
 znnd version v0.0.1
 ```
@@ -93,11 +194,13 @@ znnd version v0.0.1
 
 The NoM architecture features a block-lattice comprised of individual account-chains. When you issue a transaction, a *send block* will be created and signed by your private key and will also be broadcasted to the network. The transaction can be considered final after it is accepted by the network and embedded into several momentums. For the recipient to use the funds, he will need to create a corresponding *receive block* and properly sign it to complete the transaction.
 
-- Use the following command to send `amount` of `ZNN` to an address `toAddress`. Similarly, you can use the command above to send `QSR`:
+- Use the following command to send `amount` of `ZNN` to an address `toAddress`. Similarly, you can use the command to send `QSR`:
 
 ```bash
 ./znn-cli send z1qqjr86g6220kmhn2jrelwhtk7u0mp4r5amjwf2 10 znn --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
-
+```
+Output:
+```bash
 Sending 10.00000000 znn to z1qqjr86g6220kmhn2jrelwhtk7u0mp4r5amjwf2
 Done
 ```
@@ -110,6 +213,7 @@ Done
 
 - You will need to wait for Plasma generation via PoW:
 
+Output:
 ```bash
 You have 3 transaction(s) to receive
 Please wait ...
@@ -120,7 +224,10 @@ Done
 
 ```bash
 ./znn-cli receive a994b94ae93b683833ddd3ff1fbf53fe918d4f7b93326e7875ab13eead2c5ee2 --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Please wait ...
 Done
 ```
@@ -131,7 +238,10 @@ Done
 
 ```bash
 ./znn-cli balance --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Balance for account-chain z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x having height 2
   150000.00000000 QSR zenon.network zts1qsrxxxxxxxxxxxxxmrhjll
   15000.00000000 ZNN zenon.network zts1znnxxxxxxxxxxxxx9z4ulx
@@ -143,7 +253,10 @@ Balance for account-chain z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x having height
 
 ```bash
 ./znn-cli  unreceived --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Nothing to receive
 ```
 
@@ -153,7 +266,10 @@ Nothing to receive
 
 ```bash
 ./znn-cli  unconfirmed --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 No unconfirmed transactions
 ```
 
@@ -163,7 +279,10 @@ No unconfirmed transactions
 
 ```bash
 ./znn-cli frontierMomentum
+```
 
+Output:
+```bash
 Momentum height: 32202
 Momentum hash: 528ac51f9368930b4b07096f0aa45ccaf42a3fd7ae7e657e0233fe1942c0f707
 Momentum previousHash: f5dada224e42dbc17094ac1a3debf748d17523ce23e3ba41558896682046a70d
@@ -191,6 +310,7 @@ Done
 
 - If there are Plasma entries, it will print them with their corresponding IDs, so you can cancel the Plasma generation:
 
+Output:
 ```bash
 Fusing 10010.00000000 QSR for Plasma in 2 entries
   10000.00000000 QSR for z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt
@@ -203,7 +323,10 @@ Can be canceled at momentum height: 35810. Use id eb02eb1e0f51a70b3d622d73d4b23f
 
 ```bash
 ./znn-cli plasma.cancel eb02eb1e0f51a70b3d622d73d4b23f04710c33024593114ea12285d88c05dc61 --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Canceling Plasma fusion with id eb02eb1e0f51a70b3d622d73d4b23f04710c33024593114ea12285d88c05dc61
 Done
 ```
@@ -212,19 +335,25 @@ Done
 
 ```bash
 ./znn-cli plasma.get --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x has 10 / 10 plasma with 10.00000000 QSR fused.
 ```
 
 ## Staking commands
 
-Staking is the process that uses `ZNN` to produce `QSR`.
+Staking is the process of bonding `ZNN` to produce `QSR`.
 
 - Use this to create a new stake of `amount` for `duration` months
 
 ```bash
 ./znn-cli stake.register 100 2 --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Staking 100.00000000 ZNN for 2 month(s)
 Done
 ```
@@ -233,7 +362,10 @@ Done
 
 ```bash
 ./znn-cli stake.list --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Showing 1 out of a total of 1 staking entries
 Stake id 7d43942c01cb79bc5db804c80b76310b379b41164bb71c21b1706d0f10257346 with amount 100.00000000 ZNN
     Can be revoked in 1439:59:05
@@ -243,7 +375,10 @@ Stake id 7d43942c01cb79bc5db804c80b76310b379b41164bb71c21b1706d0f10257346 with a
 
 ```bash
 ./znn-cli stake.revoke efdb1e4d9bf93352aceff151465cd12245e03c51bef472292e1ddec9da73b61c --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Can`t revoke! Try again in 47:52:48
 ```
 
@@ -251,7 +386,10 @@ Can`t revoke! Try again in 47:52:48
 
 ```bash
 ./znn-cli stake.revoke efdb1e4d9bf93352aceff151465cd12245e03c51bef472292e1ddec9da73b61c --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Done
 Use receiveAll to collect your stake amount and uncollected reward(s) after 2 momentums
 ```
@@ -260,20 +398,26 @@ Use receiveAll to collect your stake amount and uncollected reward(s) after 2 mo
 
 ```bash
 ./znn-cli stake.collect --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Done
 Use receiveAll to collect your stake reward(s) after 1 momentum
 ```
 
 ## Sentinel commands
 
-A Sentinel Nodes requires a fixed deposit of `50000 QSR` for the Sentinel slot and `5000 ZNN` and can be deployed using the `znn-controller`. When you use `sentinel.register`, it will deposit the `QSR` and then call the smart contract while also sending `5000 ZNN`. Use `znn-controller` to deploy the Sentinel.
+A Sentinel Nodes requires a fixed deposit of `50000 QSR` for the Sentinel slot and `5000 ZNN` and can be deployed using the `znn-controller`. When you use `sentinel.register`, it will deposit the `QSR` and then call the smart contract while also sending `5000 ZNN`. Use `znn-controller` to deploy the Sentinel.  Sentinels are currently a placeholder for infrastructure in the future.  Users can earn Sentinel rewards but no infrastructure is required yet.  
 
 - Use this to register a Sentinel. It will deposit `QSR` and call the smart contract. Will fail if you don't have the required amount of `ZNN` or `QSR`
 
 ```bash
 ./znn-cli sentinel.register --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 You have 0 QSR deposited for the Sentinel
 Done
 Check after 2 momentums if the Sentinel was successfully registered using sentinel.list command
@@ -285,7 +429,10 @@ Check after 2 momentums if the Sentinel was successfully registered using sentin
 
 ```bash
 ./znn-cli sentinel.list --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Revocation window will open in 647:59:20
 ```
 
@@ -297,12 +444,14 @@ Revocation window will open in 647:59:20
 
 - You need to wait for the revocation window to open in order to revoke the Sentinel
 
+Output:
 ```bash
 Cannot revoke Sentinel. Revocation window will open in 647:57:40
 ```
 
 - When the revocation window is open you can revoke the Sentinel and collect back the locked `QSR` from the slot and `ZNN`:
 
+Output:
 ```bash
 Done
 Use receiveAll to collect back the locked amount of ZNN and QSR
@@ -312,7 +461,10 @@ Use receiveAll to collect back the locked amount of ZNN and QSR
 
 ```bash
 ./znn-cli sentinel.collect --keyStore z1qz8tylu88et6ffy227pw8gak5qvn5awg35l96x --passphrase yourComplexPassphrase
+```
 
+Output:
+```bash
 Done
 Use receiveAll to collect your sentinel reward(s) after 1 momentum
 ```
