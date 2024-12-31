@@ -2,6 +2,6 @@
   "label": "Intro",
   "position": 2,
   "customProps": {
-    "sidebar_is_category_link": true
+    "sidebar_is_category_link": false
   }
 } 
