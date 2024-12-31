@@ -44,8 +44,7 @@ const config = {
         docs: {
           sidebarPath: './sidebars.js',
           routeBasePath: '/',
-          editUrl:
-            'https://github.com/0x3639/docs/',
+          editUrl: 'https://github.com/0x3639/docs/edit/main',
         },
         blog: false,
         theme: {
@@ -149,6 +148,21 @@ const config = {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
       },
+      metadata: [
+        { name: 'description', content: 'Zenon Docs - The official documentation' },
+        {
+          property: 'og:image',
+          content: 'https://example.com/path/to/your-new-social-image.jpg',
+        },
+        {
+          property: 'og:title',
+          content: 'Zenon Project – Network of Momentum Documentation',
+        },
+        {
+          property: 'og:description',
+          content: 'Learn about Zenon’s fast, feeless transactions and innovative architecture.',
+        },
+      ],
     }),
 };
 
