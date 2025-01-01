@@ -4,96 +4,113 @@ slug: consensus
 title: Consensus
 ---
 
-### Consensus Algorithm in `go-zenon`
+# Zenon Consensus Algorithm
 
-During Alphanet, NoM uses a delegated Proof of Stake
-The `go-zenon` project implements a consensus algorithm to ensure the integrity and consistency of the blockchain. Here is a detailed explanation of the consensus algorithm and its key components.
+## Introduction
 
-#### Overview
-The consensus mechanism in `go-zenon` is designed to coordinate the agreement among different nodes in the network on the state of the blockchain. This is crucial for maintaining a single, consistent ledger and for preventing double-spending.
+Zenon (Alphanet) employs a “placeholder” consensus mechanism that closely resembles a delegated Proof-of-Stake (dPoS) model, where a group of staked nodes called “pillars” take turns producing blocks. By defining a strict producer schedule, the network generally ensures that only one pillar is responsible for block production at any given time, thereby enhancing both security and efficiency. This systematic approach reduces conflicts over block generation and streamlines the validation process.
 
-#### Key Components
-1. **Consensus Object**
-   - The `consensus` object manages the consensus process, including the initialization, starting, and stopping of the consensus mechanism.
-   - It includes components such as `chain`, `eventManager`, `electionManager`, and `points`.
+1. The network consists of multiple nodes called pillars.  
+2. Time is divided into intervals (“ticks”), with each interval determining which pillar is responsible for producing the next block (or “momentum”).  
+3. An “election” process schedules pillars in advance, ensuring that the producer order is both fair and transparent.  
+4. Users delegate stake to pillars, boosting a pillar’s “weight.” Pillars with higher weight are more likely to be chosen to produce blocks.  
+5. A portion of pillars are selected randomly allowing lower-ranked pillars to participate occasionally.
 
-2. **Election Algorithm**
-   - The election algorithm determines which nodes (referred to as pillars) are selected to produce blocks (momentums) for a given epoch.
-   - The algorithm considers factors such as pillar weights, randomness, and predefined configurations like `NodeCount` and `RandCount`.
+Under this model, most block-production duties go to the best-staked pillars, but lower-staked pillars still have a chance to produce blocks in every election period. By delegating stake to a pillar, users help increase its ranking. Those pillars that make it into the active set (defined by the NodeCount parameter, typically 30) gain a direct share of the block-production schedule and can earn additional rewards.
 
-3. **Pillar Management**
-   - Pillars are responsible for producing blocks and are selected based on the consensus algorithm.
-   - The `pillar.Manager` handles the registration and unregistration of pillars within the consensus system, ensuring that they produce blocks at the correct times.
+Looking farther ahead, Zenon’s roadmap anticipates a transition from dPoS to a high-performance, leaderless consensus system inspired by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This evolution will improve scalability, fault tolerance, and transaction throughput (discussed below).
 
-4. **Epoch Management**
-   - The consensus mechanism operates in epochs, with each epoch having a fixed duration (`EpochDuration`).
-   - During each epoch, the selected pillars produce blocks according to a predefined schedule.
+---
 
-5. **Verification**
-   - The consensus mechanism includes verification processes to ensure that the blocks produced by the pillars are valid.
-   - This includes checking the producer of a block against the expected producer for a given timestamp.
+## Pillars, NodeCount, and RandCount
 
-#### Detailed Implementation
-- **Initialization and Start**
-  - The consensus mechanism is initialized by setting up necessary components like the `electionManager`, `points`, and event handlers.
-  - The `Start` function enables the consensus mechanism, registering it with the blockchain and starting the block production process.
+Typically, configuration parameters in ‹vm/constants/consensus.go› specify:  
+• BlockTime: the interval (in seconds) between two consecutive blocks (momentums).  
+• NodeCount: the number of pillars deterministically selected each election tick (often 30).  
+• RandCount: the number of additional pillars chosen randomly from the rest.
 
-- **Election Process**
-  - The `electionAlgorithm` selects producers by splitting pillars into groups based on their weights and applying randomness to ensure fairness.
-  - This ensures that the block production responsibility is distributed among different nodes.
+Together, these ensure that:  
+• The majority of blocks come from the top pillars (by weight).  
+• A random subset of lower-ranked pillars can still produce blocks occasionally.  
 
-- **Verification and Validation**
-  - The `VerifyMomentumProducer` function checks if the block producer is the expected one for the given timestamp.
-  - This helps in detecting and preventing fraudulent block production.
+This means that although top-ranked pillars generally produce the most blocks and receive the majority of rewards, other pillars aren’t strictly shut out. If a given pillar is picked through RandCount, it has an interval to produce a block and earn a share of rewards. Over time, these random picks help spread participation and allow new pillars to begin earning.
 
-#### Example Code Snippets
-Here are some key code snippets from the `go-zenon` repository that illustrate the consensus mechanism:
+---
 
-- **Consensus Initialization**
-  ```go
-  func NewConsensus(db db.DB, chain chain.Chain, testing bool) Consensus {
-      genesisTimestamp := chain.GetGenesisMomentum().Timestamp
-      epochTicker := common.NewTicker(*genesisTimestamp, EpochDuration)
-      cacheSize := 7 * 24 * 60 * 60 / (constants.ConsensusConfig.BlockTime * int64(constants.ConsensusConfig.NodeCount))
+## Technical Explanation
 
-      dbCache := storage.NewConsensusDB(db, int(cacheSize), int(cacheSize))
-      electionManager := newElectionManager(chain, dbCache)
+Below is a more in-depth look at how Zenon’s current consensus mechanism operates:
 
-      return &consensus{
-          log:             common.ConsensusLogger,
-          genesis:         *genesisTimestamp,
-          chain:           chain,
-          testing:         testing,
-          eventManager:    newEventManager(),
-          electionManager: electionManager,
-          points:          newPoints(electionManager, epochTicker, chain, dbCache),
-          closed:          make(chan struct{}),
-      }
-  }
-  ```
+### Core Structures
 
-- **Election Algorithm**
-  ```go
-  func (ea *electionAlgorithm) SelectProducers(context *AlgorithmConfig) []*types.PillarDelegation {
-      groupA, groupB := ea.filterByWeight(context)
-      producers := ea.filterRandom(groupA, groupB, context)
-      producers = ea.shuffleOrder(producers, context)
-      return producers
-  }
-  ```
+1. The “consensus” object.  
+   - Holds references to critical components:  
+     • The blockchain state (chain.Chain)  
+     • The election manager (electionManager), which decides pillar scheduling  
+     • Points (Points), which track producer statistics and historical data  
+     • A logger, a synchronization wait group, and a “closed” channel to handle shutdown signals
 
-- **Verification**
-  ```go
-  func (cs *consensus) VerifyMomentumProducer(momentum *nom.Momentum) (bool, error) {
-      expected, err := cs.GetMomentumProducer(*momentum.Timestamp)
-      if err != nil {
-          return false, err
-      }
-      if momentum.Producer() == *expected {
-          return true, nil
-      }
-      return false, nil
-  }
-  ```
+2. The “electionManager.”  
+   - Uses chain data, pillar weights, and delegation info to produce a schedule of blocks.  
+   - Exposes methods such as ElectionByTime and ElectionByTick to retrieve the next set of producers.
 
-By understanding these components and their interactions, developers can gain insight into the consensus mechanism in `go-zenon` and how it ensures the integrity and security of the blockchain. For more detailed information, you can explore the [repository's code](https://github.com/zenon-network/go-zenon).
+3. The “work” goroutine in consensus (the cs.work function).  
+   - Starts after the chain’s genesis time has elapsed.  
+   - Periodically checks the current scheduling “tick,” pulls the election data for that tick, and broadcasts the upcoming block producers.
+
+### How Scheduling and Production Work
+
+1. At the start of each new “tick,” the electionManager compiles a list of the top pillars plus some additional pillars at random (if RandCount > 0).  
+2. The consensus module calculates exact time slots (startTime and endTime) for each selected pillar.  
+3. As time progresses, blocks of code wait for each pillar’s scheduled startTime, then broadcast a “producer event,” indicating which pillar should create a momentum.  
+4. Once a pillar produces its block, consensus checks whether the producer is correct by comparing the block’s recorded address against the one scheduled in the election manager.
+
+### Rewards for Pillars (Including Non-Top 30)
+
+• In the placeholder dPoS model, block rewards and delegation rewards are calculated at the end of each block (and more comprehensively per epoch).  
+• The logic at ‹vm/embedded/implementation/pillars.go› shows how the system calculates:  
+  – DelegationReward: Proportional to how many blocks that pillar produced, how many blocks it was expected to produce, and how much stake is delegated.  
+  – BlockReward: Tied to the actual number of blocks produced.  
+• Because RandCount may allow “non-top” pillars to appear in the schedule, these pillars can sometimes produce blocks and thus earn rewards, even if they do not rank in the top “NodeCount.”
+
+In short, only pillars that produce blocks receive direct block-production rewards. But the higher your stake (and hence ranking), the more often you are selected—meaning more opportunities to produce and earn. If you are outside the top tier, the random subset might still provide an occasional opportunity to produce blocks and collect rewards.
+
+### Important Configurations
+
+• constants.ConsensusConfig.BlockTime – Interval in seconds between consecutive blocks  
+• constants.ConsensusConfig.NodeCount – Number of pillars deterministically chosen per tick (commonly 30)  
+• constants.ConsensusConfig.RandCount – Number of randomly chosen pillars that get to produce blocks in that same tick  
+• EpochDuration – Usually 24 hours, used to define the length of an “epoch” for larger reward tracking
+
+### Lifecycle of Consensus
+
+1. Initialization:  
+   - The consensus struct is created, pointing to chain state, election manager, etc.  
+   - The chain “registers” consensus’ modules (points, electionManager) to receive block notifications.  
+
+2. Operation:  
+   - Once time has passed beyond the genesis block’s timestamp, the consensus loop enters a repeating cycle:  
+     – Determine the current scheduling tick.  
+     – Fetch the producers from electionManager.  
+     – Broadcast events for each pillar’s assigned time slice.  
+
+3. Verification:  
+   - When a newly produced block arrives, the consensus engine verifies that the block’s “producer” field matches the scheduled producing pillar.  
+
+4. Shutdown:  
+   - The code calls Stop(), closes the consensus “closed” channel, and unregisters the modules.
+
+---
+
+## Phase I Transition: Leaderless, DAG-Based Consensus (N&T)
+
+While Zenon currently employs a dPoS-like algorithm with `NodeCount` and `RandCount` pillars, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of “leadership” or “block producers” at fixed intervals and instead relies on:
+
+• A DAG-based transaction layer (Narwhal) for extremely efficient data propagation.  
+• A succinct, partially synchronous ordering layer (Tusk) that finalizes transactions quickly and robustly.  
+
+By separating transaction dissemination from ordering, Zenon aims to achieve:
+
+• Massive throughput (100,000 TPS or more).  
+• Quick finality despite temporary byzantine or network failures.  
+• Decentralized fairness, with no single leader for malicious actors to target.

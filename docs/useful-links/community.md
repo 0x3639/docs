@@ -12,6 +12,8 @@ title: Community
 - Zenon Tools https://zenon.tools/overview 
 - Zenon Org https://www.zenon.org/
 - Zenon Info https://zenon.info
+- Zenon Wiki https://zenon.wiki
+- Ask Zenon Wiki https://ask.zenon.wiki/
 - ZenonZenon https://zenonzenon.com/
 - Alien Trap Society https://www.atsocy.com/
 - Green Pill https://greenpill.pro
