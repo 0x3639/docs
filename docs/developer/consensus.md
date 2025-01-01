@@ -91,8 +91,8 @@ In short, only pillars that produce blocks receive direct block-production rewar
 
 While Zenon currently employs a dPoS like consensus algorithm, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of “leadership” or “block producers” at fixed intervals and instead relies on:
 
-• A transaction layer (Narwhal "inspired") for extremely efficient data propagation.  
-• A fully-asynchronous, wait-free consensus algorithm (Tusk) that uses a "random coin" to provide asynchronous consensus. Tusk was proposed in the whitepaper to help Narwhal remain live under DDoS and asynchronous attacks.
+• A transaction layer (Narwhal "inspired") for efficient data propagation.  
+• A fully-asynchronous, wait-free consensus algorithm (Tusk) that uses a "random coin" to provide asynchronous consensus. Tusk also helps Narwhal remain live under DDoS and asynchronous attacks.
 
 By separating transaction dissemination from ordering, Zenon aims to achieve:
 
