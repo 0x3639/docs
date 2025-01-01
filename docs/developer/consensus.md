@@ -8,82 +8,45 @@ title: Consensus
 
 ## Introduction
 
-Zenon (Alphanet) employs a “placeholder” consensus mechanism that closely resembles a delegated Proof-of-Stake (dPoS) model, where a group of staked nodes called “pillars” take turns producing blocks. By defining a strict producer schedule, the network generally ensures that only one pillar is responsible for block production at any given time, thereby enhancing both security and efficiency. This systematic approach reduces conflicts over block generation and streamlines the validation process.
+Zenon (Alphanet) uses a delegated Proof-of-Stake (dPoS) approach as a placeholder consensus mechanism. In each cycle, a group of staked nodes called “Pillars” take turns producing blocks, using a strict production schedule to prevent conflicts. Pillars are weighted by the stake they receive from user delegations, enabling higher-staked Pillars to produce blocks more frequently while still allowing less frequent opportunities for lower-staked Pillars.
 
-1. The network consists of multiple nodes called “pillars.”  
-2. Time is divided into intervals (“ticks”), with each interval determining which pillar is responsible for producing the next block (or “momentum”).  
-3. An “election” process schedules pillars in advance, ensuring that the producer order is both fair and transparent.  
-4. Users delegate stake to pillars, boosting a pillar’s “weight.” Pillars with higher weight are more likely to be chosen to produce blocks.  
-5. A portion of pillars are selected randomly, allowing lower-ranked pillars to participate occasionally.
-
-Under this model, most block-production duties go to the best-staked pillars, but lower-staked pillars still have a chance to produce blocks in every election period. By delegating stake to a pillar, users help increase its ranking. Those pillars that make it into the active set (defined by the `NodeCount` parameter, currently 30) gain a direct share of the block-production schedule and can earn additional rewards.
-
-Looking farther ahead, Zenon’s roadmap anticipates a transition from dPoS to a high-performance, leaderless consensus system inspired by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This evolution will improve scalability, fault tolerance, and transaction throughput (discussed below).
+Looking further ahead, Zenon’s roadmap includes transitioning to a high-performance, leaderless consensus based on [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-generation system aims to significantly improve scalability, fault tolerance, and transaction throughput.
 
 ---
 
-## Technical Explanation
+## Simplified Explanation of Zenon's Current Consensus
 
-Below is a more in-depth look at how Zenon’s current consensus mechanism operates:
+### Why We Need Consensus
 
-### Core Structures
+In any blockchain, the goal of consensus is to ensure that all honest participants agree on the order of transactions and that these transactions remain available and verifiable by everyone. Zenon currently uses a delegated Proof-of-Stake–like mechanism as a “placeholder” until it transitions to a more advanced, leaderless system in the future.
 
-1. The “consensus” object  
-   - Holds references to critical components:  
-     • The blockchain state (`chain.Chain`)  
-     • The election manager (`electionManager`), which decides pillar scheduling  
-     • Points (`Points`), which track producer statistics and historical data  
-     • A logger, a synchronization wait group, and a “closed” channel to handle shutdown signals  
+### Core Idea: Pillars as Block Producers
 
-2. The “electionManager”  
-   - Uses chain data, pillar weights, and delegation info to produce a schedule of blocks.  
-   - Exposes methods such as `ElectionByTime` and `ElectionByTick` to retrieve the next set of producers.
+• Zenon’s network features special nodes called “Pillars.”  
+• Pillars hold stake, either their own or delegated from other users and this stake influences how often they get to produce blocks.  
+• By default, the scheduling algorithm selects producers from two pools each: the top 30 staked pillars, which get more frequent turns, and the remaining pillars, which are chosen less often.
 
-3. The “work” goroutine in consensus (the `cs.work` function)  
-   - Starts after the chain’s genesis time has elapsed.  
-   - Periodically checks the current scheduling “tick,” pulls the election data for that tick, and broadcasts the upcoming block producers.
+### How Blocks Get Produced
 
-### How Scheduling and Production Work
+1. Time is divided into intervals (ticks). Each tick has assigned Pillars, one Pillar at a time, to produce blocks.  
+2. The chosen Pillar is responsible for creating a new block (called a “momentum”) to be added to the blockchain.  
+3. The system ensures Pillars with the most stake produce blocks more often, but Pillars outside the top 30 also produce blocks at random, but less frequently.
 
-1. At the start of each new “tick,” the `electionManager` compiles a list of the top pillars plus some additional pillars at random (if `RandCount` > 0).  
-2. The consensus module calculates exact time slots (`startTime` and `endTime`) for each selected pillar.  
-3. As time progresses, code waits for each pillar’s scheduled `startTime`, then broadcasts a “producer event,” indicating which pillar should create a momentum.  
-4. Once a pillar produces its block, consensus checks whether the producer is correct by comparing the block’s recorded address against the one scheduled in the election manager.
+### Scheduling and Order
 
-### Rewards for Pillars (Including Non-Top 30)
+• Before each tick, an “election manager” calculates which Pillars are scheduled to produce blocks.  
+• When it’s a Pillar’s turn (for a short time slot), other nodes expect that Pillar to produce a valid block.  
+• If the block is valid, it gets added to the chain, extending Zenon’s shared “ledger” of transactions.
 
-• In this placeholder dPoS model, block rewards and delegation rewards are calculated at the end of each block (and more comprehensively per epoch).  
-• The logic in ‹vm/embedded/implementation/pillars.go› shows how the system calculates:  
-  - `DelegationReward`: Proportional to how many blocks that pillar produced, how many blocks it was expected to produce, and how much stake is delegated.  
-  - `BlockReward`: Tied to the actual number of blocks produced.  
-• Because `RandCount` may allow “non-top” pillars to appear in the schedule, these pillars can sometimes produce blocks and thus earn rewards, even if they do not rank in the top `NodeCount`.
+### Earning Rewards
 
-In short, only pillars that produce blocks receive direct block-production rewards. However, the higher your stake (and hence ranking), the more often you are selected—meaning more opportunities to produce and earn. If you are outside the top tier, the random subset might still provide an occasional opportunity to produce blocks and collect rewards.
+• Pillars who produce valid blocks receive rewards.  
+• Users who delegate stake to these Pillars also share in those rewards proportionally.  
+• The more frequently a Pillar produces blocks, the greater its reward potential.
 
-### Important Configurations
+### Reliability and Security
 
-• `constants.ConsensusConfig.BlockTime` – Interval in seconds between consecutive blocks  
-• `constants.ConsensusConfig.NodeCount` – Number of pillars deterministically chosen per tick (currently 30)  
-• `constants.ConsensusConfig.RandCount` – Number of randomly chosen pillars that get to produce blocks in that same tick  
-• `EpochDuration` – 24 hours, used to define the length of an “epoch” for larger reward tracking  
-
-### Lifecycle of Consensus
-
-1. Initialization  
-   - The consensus struct is created, pointing to chain state, an election manager, etc.  
-   - The chain “registers” the `points` and `electionManager` modules to receive block notifications.  
-
-2. Operation  
-   - Once time has passed beyond the genesis block’s timestamp, the consensus loop enters a repeating cycle:  
-     • Determine the current scheduling tick.  
-     • Fetch the producers from the `electionManager`.  
-     • Broadcast events for each pillar’s assigned time slice.  
-
-3. Verification  
-   - When a newly produced block arrives, the consensus engine verifies that the block’s “producer” field matches the scheduled producing pillar.  
-
-4. Shutdown  
-   - The code calls `Stop()`, closes the consensus “closed” channel, and unregisters the modules.
+Zenon’s current setup provides a clear schedule that prevents most conflicts over who should produce the next block. Since everyone anticipates which Pillar is next, it’s straightforward to check whether a new block was created by the correct producer.
 
 ---
 
@@ -101,3 +64,9 @@ By separating transaction dissemination from ordering, Zenon aims to achieve:
 • Decentralized fairness, with no single leader for malicious actors to target.
 
 Implementing a distributed random coin that is secure, efficient, and robust under real-world conditions is complex. It requires strong cryptographic foundations and careful protocol design to ensure that no single party can control or bias the randomness. As of this writing no network has implemented this feature in production.
+
+Initial "out of the box" performance metrics reported from the Narwhal & Tusk whitepaper can be seen below.
+
+![Narwhal and Tusk Performance Metrics](/img/narwhal-tusk-graph-1.png)
+
+![Narwhal and Tusk Performance Metrics](/img/narwhal-tusk-graph-2.png)
