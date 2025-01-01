@@ -16,7 +16,7 @@ Zenon (Alphanet) employs a “placeholder” consensus mechanism that closely re
 4. Users delegate stake to pillars, boosting a pillar’s “weight.” Pillars with higher weight are more likely to be chosen to produce blocks.  
 5. A portion of pillars are selected randomly, allowing lower-ranked pillars to participate occasionally.
 
-Under this model, most block-production duties go to the best-staked pillars, but lower-staked pillars still have a chance to produce blocks in every election period. By delegating stake to a pillar, users help increase its ranking. Those pillars that make it into the active set (defined by the `NodeCount` parameter, typically 30) gain a direct share of the block-production schedule and can earn additional rewards.
+Under this model, most block-production duties go to the best-staked pillars, but lower-staked pillars still have a chance to produce blocks in every election period. By delegating stake to a pillar, users help increase its ranking. Those pillars that make it into the active set (defined by the `NodeCount` parameter, currently 30) gain a direct share of the block-production schedule and can earn additional rewards.
 
 Looking farther ahead, Zenon’s roadmap anticipates a transition from dPoS to a high-performance, leaderless consensus system inspired by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This evolution will improve scalability, fault tolerance, and transaction throughput (discussed below).
 
@@ -54,8 +54,8 @@ Below is a more in-depth look at how Zenon’s current consensus mechanism opera
 
 • In this placeholder dPoS model, block rewards and delegation rewards are calculated at the end of each block (and more comprehensively per epoch).  
 • The logic in ‹vm/embedded/implementation/pillars.go› shows how the system calculates:  
-  - DelegationReward: Proportional to how many blocks that pillar produced, how many blocks it was expected to produce, and how much stake is delegated.  
-  - BlockReward: Tied to the actual number of blocks produced.  
+  - `DelegationReward`: Proportional to how many blocks that pillar produced, how many blocks it was expected to produce, and how much stake is delegated.  
+  - `BlockReward`: Tied to the actual number of blocks produced.  
 • Because `RandCount` may allow “non-top” pillars to appear in the schedule, these pillars can sometimes produce blocks and thus earn rewards, even if they do not rank in the top `NodeCount`.
 
 In short, only pillars that produce blocks receive direct block-production rewards. However, the higher your stake (and hence ranking), the more often you are selected—meaning more opportunities to produce and earn. If you are outside the top tier, the random subset might still provide an occasional opportunity to produce blocks and collect rewards.
@@ -63,7 +63,7 @@ In short, only pillars that produce blocks receive direct block-production rewar
 ### Important Configurations
 
 • `constants.ConsensusConfig.BlockTime` – Interval in seconds between consecutive blocks  
-• `constants.ConsensusConfig.NodeCount` – Number of pillars deterministically chosen per tick (commonly 30)  
+• `constants.ConsensusConfig.NodeCount` – Number of pillars deterministically chosen per tick (currently 30)  
 • `constants.ConsensusConfig.RandCount` – Number of randomly chosen pillars that get to produce blocks in that same tick  
 • `EpochDuration` – 24 hours, used to define the length of an “epoch” for larger reward tracking  
 
