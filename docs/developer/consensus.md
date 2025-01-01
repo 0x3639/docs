@@ -89,13 +89,15 @@ In short, only pillars that produce blocks receive direct block-production rewar
 
 ## Phase I Transition: Leaderless, DAG-Based Consensus (N&T)
 
-While Zenon currently employs a dPoS-like algorithm with `NodeCount` and `RandCount` pillars, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of “leadership” or “block producers” at fixed intervals and instead relies on:
+While Zenon currently employs a dPoS like consensus algorithm, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of “leadership” or “block producers” at fixed intervals and instead relies on:
 
-• A DAG-based transaction layer (Narwhal) for extremely efficient data propagation.  
-• A succinct, partially synchronous ordering layer (Tusk) that finalizes transactions quickly and robustly.
+• A transaction layer (Narwhal "inspired") for extremely efficient data propagation.  
+• A fully-asynchronous, wait-free consensus algorithm (Tusk) that uses a "random coin" to provide asynchronous consensus. Tusk was proposed in the whitepaper to help Narwhal remain live under DDoS and asynchronous attacks.
 
 By separating transaction dissemination from ordering, Zenon aims to achieve:
 
 • Massive throughput (100,000 TPS or more).  
 • Quick finality despite temporary byzantine or network failures.  
 • Decentralized fairness, with no single leader for malicious actors to target.
+
+Implementing a distributed random coin that is secure, efficient, and robust under real-world conditions is complex. It requires strong cryptographic foundations and careful protocol design to ensure that no single party can control or bias the randomness. As of this writing no network has implemented this feature in production.
