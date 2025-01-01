@@ -14,11 +14,11 @@ Looking further ahead, Zenon’s roadmap includes transitioning to a high-perfor
 
 ---
 
-## Simplified Explanation of Zenon's Current Consensus
+## Delegated Proof-of-Stake Consensus
 
 ### Why We Need Consensus
 
-In any blockchain, the goal of consensus is to ensure that all honest participants agree on the order of transactions and that these transactions remain available and verifiable by everyone. Zenon currently uses a delegated Proof-of-Stake–like mechanism as a “placeholder” until it transitions to a more advanced, leaderless system in the future.
+In any blockchain, the goal of consensus is to ensure that all honest participants agree on the order of transactions and that these transactions remain available and verifiable by everyone. Zenon currently uses a delegated Proof-of-Stake mechanism as a “placeholder” until it transitions to a more advanced, leaderless system in the future.
 
 ### Core Idea: Pillars as Block Producers
 
@@ -50,7 +50,7 @@ Zenon’s current setup provides a clear schedule that prevents most conflicts o
 
 ---
 
-## Phase I Transition: Leaderless, DAG-Based Consensus (N&T)
+## Phase I Transition: Narwhal & Tusk Consensus 
 
 While Zenon currently employs a dPoS like consensus algorithm, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of “leadership” or “block producers” at fixed intervals and instead relies on:
 
