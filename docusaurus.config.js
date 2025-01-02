@@ -156,7 +156,7 @@ const config = {
         { name: 'description', content: 'Zenon Docs - The official documentation' },
         {
           property: 'og:image',
-          content: '/img/zenon-social-card.jpg',
+          content: 'https://docs.0x3639.com/img/zenon-social-card.jpg',
         },
         {
           property: 'og:title',
