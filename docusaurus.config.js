@@ -58,7 +58,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/zenon-social-card.jpg',
       colorMode: {
         defaultMode: 'dark',
         disableSwitch: true,
@@ -115,12 +115,16 @@ const config = {
             title: 'Community',
             items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                label: 'Zenon Chat',
+                href: 'https://zenon.chat',
+              },
+              {
+                label: 'Telegram',
+                href: 'https://t.me/zenonnetwork',
               },
               {
                 label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
+                href: 'https://discord.com/invite/zenonnetwork',
               },
               {
                 label: 'X',
@@ -142,7 +146,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Zenon Network. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
@@ -152,7 +156,7 @@ const config = {
         { name: 'description', content: 'Zenon Docs - The official documentation' },
         {
           property: 'og:image',
-          content: 'https://example.com/path/to/your-new-social-image.jpg',
+          content: 'img/zenon-social-card.jpg',
         },
         {
           property: 'og:title',

@@ -24,6 +24,18 @@ Zenon introduces a **dual-ledger architecture** that separates transaction handl
 - **Meta-DAG**: Facilitates leaderless, censorship resistant, Byzantine Fault Tolerant (BFT) consensus using virtual voting (under development).
 - **Hybrid Consensus**: Will provide Proof of Work (PoW) for security and Proof of Stake (PoS) for scalability.
 
+Dual Ledger Consensus Visualized
+
+<p align="center">
+  <a href="/img/dual-ledger-consensus.png" target="_blank">
+    <img 
+      src="/img/dual-ledger-consensus.png" 
+      alt="Sentinel Architecture" 
+      width="75%" 
+    />
+  </a>
+</p>
+
 ## Key Features
 
 ### 1. **Feeless Transactions**
@@ -38,6 +50,18 @@ Zenon introduces a **dual-ledger architecture** that separates transaction handl
    - zApps (Zenon Applications) operate on unikernels, ensuring lightweight and isolated execution environments.
    - Layer-1 provides security; Layer-2 offers a smart contract runtime.
 
+This image illustrates the Layer 2 architecture powering Zenon's smart contracts, seamlessly interacting with the Layer 1 for settlement and consensus.  
+
+<p align="center">
+  <a href="/img/sentinel-architecture.png" target="_blank">
+    <img 
+      src="/img/sentinel-architecture.png" 
+      alt="Sentinel Architecture" 
+      width="75%" 
+    />
+  </a>
+</p>
+   
 ### 4. **Modular Framework**
    - Supports interoperability with networks like Bitcoin.
    - Facilitates future innovations such as NFTs, DeFi, and cross-chain bridges.
@@ -60,6 +84,6 @@ Zenon Network offers numerous opportunities for contributors, developers, and en
 3. **Engage with the Community**: Participate in governance, collaborate on projects, or join initiatives like Accelerator-Z to fund your ideas.
 
 ## Resources to Explore
-
+- **Medium**: [Zenon Network: A Blisterning Need for Speed](https://medium.com/@Zyler9985/zenon-network-a-blistering-need-for-speed-ce34246c2f01)
 - **Whitepaper**: [Dive into the `DRAFT` technical foundations](/resources/whitepaper)
 - **Storybook**: [Explore Zenon's journey](/resources/storybook)
