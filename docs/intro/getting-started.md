@@ -50,6 +50,7 @@ Zenon introduces a **dual-ledger architecture** that separates transaction handl
 Zenon is committed to decentralization:
 - **Community-Centric Development**: Entirely run and governed by the community since 2023.
 - **Grassroots Growth**: Prioritizes word-of-mouth and organic adoption over centralized marketing.
+- **AltZ**: Contributors have a unique way of "spawning" and "rugging" various <span class="tooltip">"AltZ"<img src="/img/crypto-publius.jpg" alt="AltZ Example" class="tooltip-publius"/></span> that participate in the project. 
 
 ## Getting Involved
 

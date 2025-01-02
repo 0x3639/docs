@@ -51,3 +51,25 @@
   --ifm-footer-background-color: var(--ifm-background-color) !important;
   border-top: 1px solid var(--ifm-toc-border-color);
 }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-publius {
+  display: none;
+  position: absolute;
+  z-index: 100;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 300px;  /* adjust as needed */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.tooltip:hover .tooltip-publius {
+  display: block;
+}
