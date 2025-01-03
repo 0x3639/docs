@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 9
 slug: rpc-api
 title: RPC-API
 ---
@@ -16,7 +16,7 @@ In order to be able to enable the communication method with the Zenon full node,
 * For HTTP: `"EnableHTTP":true`, default HTTP port is `35997`
 * For Websocket: `"EnableWS":true`, default Websocket port is `35998`
 
-Learn more about configuring Nodes [Enable RPC communication for the Node daemon](quickstart.md#5)
+
 
 ## Endpoints & Permissions
 
@@ -28,7 +28,6 @@ In order to be able to perform calls to the respective `Endpoints`, the `config.
 * [wallet](#wallet): allows clients to manage wallets through the Node
 
 The bash command `znn-cli enableRPC` can be used; it will automatically populate the `config.json` with the necessary information
-Learn more about configuring Nodes [Enable RPC communication for the Node daemon](quickstart.md#5)
 
 ## Embedded Smart Contracts
 

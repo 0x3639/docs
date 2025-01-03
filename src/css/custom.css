@@ -76,11 +76,6 @@
   display: block;
 }
 
-
-/* details.alert.alert--info {
-  border: 1px solid #6cef4b !important;
-} */
-
 /* Base styles for all admonitions */
 .theme-admonition {
   border-radius: 8px;
@@ -127,4 +122,22 @@
   --ifm-alert-background-color: #392d23;
   --ifm-alert-border-color: #ff9933;     /* Burnt orange for border */
   --ifm-alert-color: #ffd9b3;           /* Light peach text */
+}
+
+.sdk-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 2rem 0;
+}
+
+.sdk-grid .button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 60px;
+  text-align: center;
+  width: 100%;
+  padding: 0 !important;
+  line-height: 1 !important;
 }

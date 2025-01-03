@@ -89,7 +89,7 @@ Zenon Network offers numerous opportunities for contributors, developers, and en
 3. **Engage with the Community**: Participate in governance, collaborate on projects, or join initiatives like [Accelerator-Z](https://medium.com/@Zyler9985/zenon-network-how-to-apply-for-a-funding-grant-e977b7efce0d) to fund your ideas.
 
 ## Resources to Explore
-- **Youtube**: [An Introduction to Zenon Network](https://www.youtube.com/watch?v=79Knl33hSlQ)
+- **Youtube**: [An Introduction to Zenon Network](https://www.youtube.com/watch?v=79Knl33hSlQ) (AI Generated Podcast Trained on Community Writte Articles)
 - **Medium**: [Zenon Network I: The Green Pill](https://medium.com/@Zyler9985/zenon-network-i-the-green-pill-883e608727a)
 - **Storybook**: [Explore Zenon's journey](/resources/storybook)
 - **Whitepaper**: [Dive into the `DRAFT` technical foundations](/resources/whitepaper)

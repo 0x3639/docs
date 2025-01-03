@@ -1,11 +1,8 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 slug: paths
 title: Paths
 ---
-
-
-
 
 # Paths & Folder structure
 

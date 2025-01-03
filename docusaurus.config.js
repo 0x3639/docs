@@ -74,7 +74,7 @@ const config = {
           {
             label: 'Intro',
             position: 'left',
-            to: '/intro',
+            to: '/intro/getting-started',
           },
           {
             href: 'https://github.com/zenon-network',

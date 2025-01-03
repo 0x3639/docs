@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 10
 slug: contributors
 title: Contributors
 ---
@@ -25,6 +25,7 @@ Zenon is supported by a network of anonymous open source developers all over the
 | [av-vonsbak](https://github.com/av-vonsbak) |   |   | ✓ |   |   |   |   |   |
 | [PlasmaKing](https://github.com/PlasmaKing) |   |   | ✓ |  ✓ |   |   |   | ✓ |
 | [@0x3639](https://github.com/0x3639) |   |   | ✓ |  ✓ |   |   | ✓ | ✓ |
+| [@ZenonORG](https://github.com/ZenonOrg) |   |   |  |  ✓ |   |   | ✓ | ✓ |
 | [@sol-znn](https://github.com/Sol-Sanctum) |   | ✓ | ✓ | ✓ |   |   |   |   |
 
 ## Zenon Project Repos
