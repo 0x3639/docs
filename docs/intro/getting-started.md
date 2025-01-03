@@ -8,11 +8,11 @@ title: Getting Started
 
 Welcome to **Zenon Network**, the Network of Momentum (NoM). Zenon is a next-generation blockchain that strives to solve the “blockchain trilemma” by offering a network that is secure, scalable, and truly decentralized.
 
-Zenon will bring fast, feeless transactions to Bitcoin and will introduce the world to a new smart contract architecture that will bring blockchain to web2. By combining cutting-edge cryptography with an innovative architecture, Zenon delivers a highly scalable, secure, and decentralized ecosystem for applications of the future.
+Zenon aims to bring fast, feeless transactions to Bitcoin and will introduce the world to a new smart contract architecture that will bring blockchain to web2. By combining cutting-edge cryptography with an innovative architecture, Zenon delivers a highly scalable, secure, and decentralized ecosystem for applications of the future.
 
 ## A Brief History and Vision
 
-Zenon began its `public` journel in 2018 when 'ProfessorZ' introduced the project in a [Bitcoin Talk forum post](https://bitcointalk.org/index.php?topic=4281633.0). Over the next three years a group of anon developers worked to lauch alphanet in 2021. Since then the project was turned over to the community where they work towards delivering Phase 1. From the beginning, Zenon has embraced decentralization, egalitarianism, and community-driven growth. Unlike many projects, Zenon was launched with no pre-sales, VCs, and insider allocations.
+Zenon began its `public` journey in 2018 when 'ProfessorZ' introduced the project in a [Bitcoin Talk forum post](https://bitcointalk.org/index.php?topic=4281633.0). Over the next three years a group of anonymous developers worked to lauch alphanet in 2021. Since then the project was turned over to the community where they work towards delivering Phase 1. From the beginning, Zenon has embraced decentralization, egalitarianism, and community-driven growth. Unlike many projects, Zenon was launched with no pre-sales, VCs, and insider allocations.
 
 The project embodies Bitcoin’s ethos, aiming to complement rather than compete with it. By leveraging its novel architecture, Zenon aspires to make Bitcoin highly scalable, interoperable, and truly programmable.
 
@@ -72,7 +72,7 @@ This image illustrates the Layer 2 architecture powering Zenon's smart contracts
 ## The Zenon Ethos
 
 Zenon is committed to decentralization:
-- **Community-Centric Development**: Entirely run and governed by the community since 2023.
+- **Community-Centric Development**: Entirely run and governed by the community since 2023. <- 2023 sort of comes out of nowehere- esp. since we highlight decentralized dev-collaboration in line #15. Sould we clearly mention MrKainez handing over the ability to create sporks to the community here?
 - **Grassroots Growth**: Prioritizes word-of-mouth and organic adoption over centralized marketing.
 - **AltZ**: Contributors have a unique way of "spawning" and "rugging" various <span class="tooltip">"AltZ"<img src="/img/crypto-publius.jpg" alt="AltZ Example" class="tooltip-publius"/></span> that participate in the project. 
 
