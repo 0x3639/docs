@@ -72,7 +72,7 @@ This image illustrates the Layer 2 architecture powering Zenon's smart contracts
 ## The Zenon Ethos
 
 Zenon is committed to decentralization:
-- **Community-Centric Development**: Entirely run and governed by the community since 2023. <- 2023 sort of comes out of nowehere- esp. since we highlight decentralized dev-collaboration in line #15. Sould we clearly mention MrKainez handing over the ability to create sporks to the community here?
+- **Community-Centric Development**: Run and governed almost entirely by the community since 2023. *Note: Mr. Kaine still retains the ability to create spork addresses.*
 - **Grassroots Growth**: Prioritizes word-of-mouth and organic adoption over centralized marketing.
 - **AltZ**: Contributors have a unique way of "spawning" and "rugging" various <span class="tooltip">"AltZ"<img src="/img/crypto-publius.jpg" alt="AltZ Example" class="tooltip-publius"/></span> that participate in the project. 
 
