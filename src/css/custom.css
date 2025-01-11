@@ -5,7 +5,7 @@
  */
 
 /* You can override the default Infima variables here. */
-/* :root {
+:root {
   --ifm-color-primary: #00e721;
   --ifm-color-primary-dark: #00d01e;
   --ifm-color-primary-darker: #00c41c;
@@ -20,7 +20,8 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-navbar-background-color: #0a0b0c;
   --ifm-footer-background-color: #0a0b0c;
-} */
+  /* --ifm-alert-border-color: #6cef4b !important; */
+}
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
@@ -34,6 +35,7 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-background-color: #151515;
   --ifm-font-color-base: #ffffff;
+
 }
 
 /* Change main background color */
@@ -72,4 +74,70 @@
 
 .tooltip:hover .tooltip-publius {
   display: block;
+}
+
+/* Base styles for all admonitions */
+.theme-admonition {
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* Info boxes */
+.alert--info {
+  --ifm-alert-background-color: #1b2b3c; /* Dark teal-ish background */
+  --ifm-alert-border-color: #4faad9;     /* Muted sky-blue for border */
+  --ifm-alert-color: #d0e9f7;           /* Lighter text color */
+}
+
+/* Warning boxes */
+.alert--warning {
+  --ifm-alert-background-color: #2c2412; 
+  --ifm-alert-border-color: #ffd700;     /* Golden border */
+  --ifm-alert-color: #fff4cc;           /* Light cream text */
+}
+
+/* Danger boxes */
+.alert--danger {
+  --ifm-alert-background-color: #3c1b1b;
+  --ifm-alert-border-color: #ff4d4d;     /* Vibrant red for border */
+  --ifm-alert-color: #ffd4d4;           /* Soft pinkish text */
+}
+
+/* Note/Secondary boxes */
+.alert--secondary {
+  --ifm-alert-background-color: #2f2f2f; 
+  --ifm-alert-border-color: #808080;     /* Neutral gray border */
+  --ifm-alert-color: #cccccc;           /* Light gray text */
+}
+
+/* Tip/Success boxes */
+.alert--success {
+  --ifm-alert-background-color: #1b3c1b;
+  --ifm-alert-border-color: #00e721;     /* Your bright green brand color */
+  --ifm-alert-color: #b3ffb3;           /* Soft green text */
+}
+
+/* Caution boxes */
+.alert--caution {
+  --ifm-alert-background-color: #392d23;
+  --ifm-alert-border-color: #ff9933;     /* Burnt orange for border */
+  --ifm-alert-color: #ffd9b3;           /* Light peach text */
+}
+
+.sdk-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 2rem 0;
+}
+
+.sdk-grid .button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 60px;
+  text-align: center;
+  width: 100%;
+  padding: 0 !important;
+  line-height: 1 !important;
 }

@@ -66,6 +66,7 @@ title: Official
 - Bitcointalk thread https://bitcointalk.org/index.php?topic=5279643.msg55303681#msg55303681
 - Development Forum https://forum.hypercore.one/
 - Community Forum http://forum.zenon.org/
+- Medium https://medium.com/@zenon.network
 
 ## Exchanges
 - wZNN on Uniswap https://app.uniswap.org/swap?inputCurrency=ETH&outputCurrency=0xb2e96a63479c2edd2fd62b382c89d5ca79f572d3

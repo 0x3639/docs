@@ -1,12 +1,12 @@
 ---
-sidebar_position: 1
+sidebar_position: 9
 slug: rpc-api
 title: RPC-API
 ---
 
 # JSON-RPC API
 
-Clients interact with Zenon Alphanet through `JSON-RPC` API calls. In the examples provided below, API calls are performed to a Zenon full node listening for websocket traffic on `127.0.0.1:35998` (IPv4) or `[::1]:35998` (IPv6). Follow the links below or use the navigation on the left to learn more about the available options.
+Clients interact with Zenon Alphanet through `JSON-RPC` API calls. In the examples provided below, API calls are performed to a Zenon full node listening for websocket traffic on `127.0.0.1:35998` (IPv4) or `[::1]:35998` (IPv6). Follow the links below or use the navigation on the right to learn more about the available options.
 
 ## Configuration
 
@@ -16,19 +16,18 @@ In order to be able to enable the communication method with the Zenon full node,
 * For HTTP: `"EnableHTTP":true`, default HTTP port is `35997`
 * For Websocket: `"EnableWS":true`, default Websocket port is `35998`
 
-Learn more about configuring Nodes [Enable RPC communication for the Node daemon](quickstart.md#5)
 
-## Endpoints & Permissions
 
-In order to be able to perform calls to the respective `Endpoints`, the `config.json` needs to be configured with the following entries:
+## Endpoints
+
+In order to be able to perform calls to the respective `Endpoints`, the `config.json` needs to be configured
 
 * [embedded](#embedded-smart-contracts): allows clients to interact with the NoM embedded smart contracts
 * [ledger](#dual-ledger): allows clients to interact with the NoM dual-ledger
 * [stats](#stats): allows clients to examine stats and other information about the Node
 * [wallet](#wallet): allows clients to manage wallets through the Node
 
-The bash command `znn-cli enableRPC` can be used; it will automatically populate the `config.json` with the necessary information
-Learn more about configuring Nodes [Enable RPC communication for the Node daemon](quickstart.md#5)
+The bash command `znn-cli enableRPC` can be used with the [Dart CLI](/wallet/cli/); it will automatically populate the `config.json` with the necessary information.
 
 ## Embedded Smart Contracts
 

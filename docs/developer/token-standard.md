@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 6
 slug: token-standard
 title: Token Standard
 ---

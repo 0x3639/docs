@@ -1,16 +1,12 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 slug: specs
 title: Specs
 ---
 
-# Zenon Alphanet
+# Zenon Alphanet Specs
 
-## Welcome
-
-The Zenon Alphanet is now live.
-
-Zenon is a cryptocurrency based on a decentralized network that aims to create next-generation tools powering the digital ecosystem of the future.
+On Nov 19, 2021 Zenon announced the release of [Alphanet Phase 0](https://x.com/Zenon_Network/status/1461763875234324490). The specifications and parameters of Alphanet are summarized below.  
 
 ## Alphanet Specs
 - **`EpochDurationInSeconds`**: 24 * 60 * 60 (1 day)
