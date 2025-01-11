@@ -8,7 +8,7 @@ title: Getting Started
 
 Welcome to **Zenon Network**, the Network of Momentum (NoM). Zenon is a next-generation blockchain that strives to solve the “blockchain trilemma” by offering a network that is secure, scalable, and truly decentralized.
 
-Zenon will bring fast, feeless transactions to Bitcoin and will introduce the world to a new smart contract architecture that will bring blockchain to web2. By combining cutting-edge cryptography with an innovative architecture, Zenon delivers a highly scalable, secure, and decentralized ecosystem for applications of the future.
+Zenon aims to bring fast, feeless transactions to Bitcoin and will introduce the world to a new smart contract architecture that will bring blockchain to web2. By combining cutting-edge cryptography with an innovative architecture, Zenon delivers a highly scalable, secure, and decentralized ecosystem for applications of the future.
 
 :::info
 "If we need to limit the scope of Zenon and the Network of Momentum under a single specific use-case, the following one should be the most appropriate — a robust platform designed to unlock a new dimension of possibilities for apps." [@medium](https://medium.com/@zenon.network/use-case-dilemma-40516b20e6ef)
@@ -77,7 +77,7 @@ This image illustrates the Layer 2 architecture powering Zenon's smart contracts
 ## The Zenon Ethos
 
 Zenon is committed to decentralization:
-- **Community-Centric Development**: Entirely run and governed by the community since 2023.
+- **Community-Centric Development**: Run and governed almost entirely by the community since 2023. *Note: Mr. Kaine still retains the ability to create spork addresses.*
 - **Grassroots Growth**: Prioritizes word-of-mouth and organic adoption over centralized marketing.
 - **AltZ**: Contributors have a unique way of "spawning" and "rugging" various <span class="tooltip">"AltZ"<img src="/img/crypto-publius.jpg" alt="AltZ Example" class="tooltip-publius"/></span> that participate in the project. 
 
