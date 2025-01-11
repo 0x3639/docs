@@ -18,7 +18,7 @@ Zenon is supported by a network of anonymous open source developers all over the
 | [@sumamu](https://github.com/sumamu) | ✓ |   | ✓ | ✓ | ✓ |   | ✓ | ✓ |
 | [@sumoshi21](https://github.com/sumoshi21) | ✓ | ✓  | ✓ | ✓ |   |   | ✓ |   |
 | [@mikemasters](https://github.com/mik3mast3rs) |   | ✓ | ✓ |   |   |   |   |   |
-| [@maznnwell](https://github.com/maznnwell) |   |   | ✓ |   |   |   |   |   |
+| [@maznnwell](https://github.com/maznnwell) |   | ✓ | ✓ |   |   |   |   |   |
 | [@drblaze21](https://github.com/drblazer21) |   | ✓ | ✓ |   |   |   |   |   |
 | [@DexterLabZ](https://github.com/DexterLabZ/) |   |   | ✓ | ✓ |   |   | ✓ | ✓ |
 | [uluCthulhu](https://github.com/uluCthulhu) |   |   | ✓ |   |   |   | ✓ |   |

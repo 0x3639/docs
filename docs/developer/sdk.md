@@ -68,3 +68,4 @@ These SDKs are maintained by members of the [Zenon community](/developer/contrib
 - **Repository**: [znn-php](https://github.com/digitalSloth/znn-php)
 - **Status**: 85% Complete
 - **Maintainer**: [digitalSloth](https://github.com/digitalSloth)
+- **Comments**: The PHP SDK is missing keystore support due to an issue with the PHP implementation of argon2 not supporting parallelism - [About parallelism (of Argon2) in the password hashing API · jedisct1/libsodium · Discussion #1092 · GitHub](https://github.com/jedisct1/libsodium/discussions/1092) Signing/sending transactions is under development.  
