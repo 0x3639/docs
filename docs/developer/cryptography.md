@@ -4,7 +4,7 @@ slug: cryptography
 title: Cryptography
 ---
 
-# Cryptography
+# Zenon Cryptography
 
 ## Wallet
 The wallet data is stored inside a `KeyStore`
