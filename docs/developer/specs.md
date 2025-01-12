@@ -6,7 +6,7 @@ title: Specs
 
 # Zenon Alphanet Specs
 
-On Nov 19, 2021 Zenon announced the release of [Alphanet Phase 0](https://x.com/Zenon_Network/status/1461763875234324490). The specifications and parameters of Alphanet are summarized below.  
+The Zenon Alphanet is now live. It was announced on Nov 19, 2021 - [Alphanet Phase 0](https://x.com/Zenon_Network/status/1461763875234324490). During Alphanet the specifications and parameters are summarized below.  
 
 ## Alphanet Specs
 - **`EpochDurationInSeconds`**: 24 * 60 * 60 (1 day)
