@@ -4,7 +4,7 @@ slug: paths
 title: Paths
 ---
 
-# Paths & Folder structure
+# Zenon Paths & Folder Structure
 
 ## Node paths
 The Zenon Node `znnd` has the following default data paths:
