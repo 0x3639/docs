@@ -4,7 +4,7 @@ slug: contributors
 title: Contributors
 ---
 
-# Community Contributors
+# Zenon Community Contributors
 
 Zenon is supported by a network of anonymous open source developers all over the world.  
 
