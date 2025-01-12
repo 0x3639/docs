@@ -22,40 +22,40 @@ In any blockchain, the goal of consensus is to ensure that all honest participan
 
 ### Core Idea: Pillars as Block Producers
 
-• Zenon’s network features special nodes called “Pillars.”  
-• Pillars hold stake, either their own or delegated from other users and this stake influences how often they get to produce blocks.  
-• By default, the scheduling algorithm selects producers from two pools each: the top 30 staked pillars, which get more frequent turns, and the remaining pillars, which are chosen less often.
+• Zenon's network features special nodes called "Pillars."  
+• Pillars hold stake, either their own or delegated from other users, and this stake influences how often they get to produce blocks.  
+• By default, the scheduling algorithm selects producers from two pools: the top 30 staked pillars, which get more frequent turns, and the remaining pillars, which are chosen less often.
 
 ### How Blocks Get Produced
 
 1. Time is divided into intervals (ticks). Each tick has assigned Pillars, one Pillar at a time, to produce blocks.  
-2. The chosen Pillar is responsible for creating a new block (called a “momentum”) to be added to the blockchain.  
+2. The chosen Pillar is responsible for creating a new block (called a "momentum") to be added to the blockchain.  
 3. The system ensures Pillars with the most stake produce blocks more often, but Pillars outside the top 30 also produce blocks at random, but less frequently.
 
 ### Scheduling and Order
 
-• Before each tick, an “election manager” calculates which Pillars are scheduled to produce blocks.  
-• When it’s a Pillar’s turn (for a short time slot), other nodes expect that Pillar to produce a valid block.  
-• If the block is valid, it gets added to the chain, extending Zenon’s shared “ledger” of transactions.
+• Before each tick, an "election manager" calculates which Pillars are scheduled to produce blocks.  
+• When it's a Pillar's turn (for a short time slot), other nodes expect that Pillar to produce a valid block.  
+• If the block is valid, it gets added to the chain, extending Zenon's shared "ledger" of transactions.
 
 ### Earning Rewards
 
 • Pillars who produce valid blocks receive rewards.  
-• Users who delegate stake to these Pillars also share in those rewards proportionally.  
+• Users who delegate stake to these Pillars also share in those rewards proportionally based on parameters set by the Pillar.  
 • The more frequently a Pillar produces blocks, the greater its reward potential.
 
 ### Reliability and Security
 
-Zenon’s current setup provides a clear schedule that prevents most conflicts over who should produce the next block. Since everyone anticipates which Pillar is next, it’s straightforward to check whether a new block was created by the correct producer.
+Zenon's current setup provides a clear schedule that prevents most conflicts over who should produce the next block. Since everyone anticipates which Pillar is next, it's straightforward to check whether a new block was created by the correct producer.
 
 ---
 
 ## Phase I Transition: Narwhal & Tusk Consensus 
 
-While Zenon currently employs a dPoS like consensus algorithm, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of “leadership” or “block producers” at fixed intervals and instead relies on:
+While Zenon currently employs a dPoS-like consensus algorithm, the Phase I roadmap envisions a transition to a leaderless consensus system influenced by [Narwhal and Tusk (N&T)](https://arxiv.org/pdf/2105.11827). This next-gen approach dissolves the typical notion of "leadership" or "block producers" at fixed intervals and instead relies on:
 
-• A transaction layer (Narwhal "inspired") for efficient data propagation.  
-• A fully-asynchronous, wait-free consensus algorithm (Tusk) that uses a "random coin" to provide asynchronous consensus. Tusk also helps Narwhal remain live under DDoS and asynchronous attacks.
+• A transaction layer (Narwhal-inspired) for efficient data propagation.  
+• A fully asynchronous, wait-free consensus algorithm (Tusk) that uses a "random coin" to provide asynchronous consensus. Tusk also helps Narwhal remain live under DDoS and asynchronous attacks.
 
 By separating transaction dissemination from ordering, Zenon aims to achieve:
 
