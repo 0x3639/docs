@@ -10,7 +10,7 @@ Zenon is supported by a network of anonymous open source developers all over the
 
 | Contributor | go-zenon | Syrius | SDKs | DevOps | L2s | Unikernels | Bridge | Website |
 |------------|:--------:|:-------:|:----:|:-------:|:---:|:----------:|:------:|:-------:|
-| [@georgezgeorgez](https://github.com/georgezgeorgez) | ✓ |   | ✓ |   | ✓ | ✓ |  |   |
+| [@georgezgeorgez](https://github.com/georgezgeorgez) | ✓ |   | ✓ | ✓ | ✓ | ✓ |  |   |
 | [@alienc0der](https://github.com/alienc0der) | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |   |
 | [@vilkris4](https://github.com/vilkris4) | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ | ✓ |
 | [@KingGorrin](https://github.com/KingGorrin/) |   | ✓ | ✓ | ✓ | ✓ |   |   | ✓ |

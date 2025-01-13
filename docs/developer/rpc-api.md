@@ -4,7 +4,7 @@ slug: rpc-api
 title: RPC-API
 ---
 
-# JSON-RPC API
+# Zenon JSON-RPC API
 
 Clients interact with Zenon Alphanet through `JSON-RPC` API calls. In the examples provided below, API calls are performed to a Zenon full node listening for websocket traffic on `127.0.0.1:35998` (IPv4) or `[::1]:35998` (IPv6). Follow the links below or use the navigation on the right to learn more about the available options.
 
@@ -15,8 +15,6 @@ In order to be able to enable the communication method with the Zenon full node,
 * For inter-process communication: `"EnableIPC":true`, default IPC port is `35996`
 * For HTTP: `"EnableHTTP":true`, default HTTP port is `35997`
 * For Websocket: `"EnableWS":true`, default Websocket port is `35998`
-
-
 
 ## Endpoints
 
