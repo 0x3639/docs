@@ -7,11 +7,7 @@ title: Cryptography
 # Zenon Cryptography
 
 ## Wallet
-The wallet data is stored inside a `KeyStore`
-
-`AES-256-GCM` for symmetric encryption
-
-`Argon2.IDkey` as Key Derivation Function
+The wallet data is stored inside a `KeyStore`. `AES-256-GCM` for symmetric encryption. `Argon2.IDkey` as Key Derivation Function
 
 * time: `1`
 * memory: `64 * 1024`

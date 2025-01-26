@@ -21,9 +21,9 @@ Zenon is supported by a network of anonymous open source developers all over the
 | [@maznnwell](https://github.com/maznnwell) |   | ✓ | ✓ |   |   |   |   |   |
 | [@drblaze21](https://github.com/drblazer21) |   | ✓ | ✓ |   |   |   |   |   |
 | [@DexterLabZ](https://github.com/DexterLabZ/) |   |   | ✓ | ✓ |   |   | ✓ | ✓ |
-| [uluCthulhu](https://github.com/uluCthulhu) |   |   | ✓ |   |   |   | ✓ |   |
-| [av-vonsbak](https://github.com/av-vonsbak) |   |   | ✓ |   |   |   |   |   |
-| [PlasmaKing](https://github.com/PlasmaKing) |   |   | ✓ |  ✓ |   |   |   | ✓ |
+| [@uluCthulhu](https://github.com/uluCthulhu) |   |   | ✓ |   |   |   | ✓ |   |
+| [@av-vonsbak](https://github.com/av-vonsbak) |   |   | ✓ |   |   |   |   |   |
+| [@PlasmaKing](https://github.com/PlasmaKing) |   |   | ✓ |  ✓ |   |   |   | ✓ |
 | [@0x3639](https://github.com/0x3639) |   |   | ✓ |  ✓ |   |   | ✓ | ✓ |
 | [@ZenonORG](https://github.com/ZenonOrg) |   |   |  |  ✓ |   |   | ✓ | ✓ |
 | [@sol-znn](https://github.com/Sol-Sanctum) |   | ✓ | ✓ | ✓ |   |   |   |   |

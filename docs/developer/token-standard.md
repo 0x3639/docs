@@ -17,4 +17,4 @@ The ZTS specification format specification follows the `bech32` address format h
 Issuing a token on the Alphanet requires a fee of `1 ZNN` that is burned.
 
 - Wallet GUI (Syrius): Navigate to Tokens tab to interact with the ZTS embedded contract
-- Wallet CLI: Check the [ZTS commands](cli.md) to interact with the ZTS embedded contract
+- Wallet CLI: Check the [ZTS commands](../wallet/dart-cli.md) to interact with the ZTS embedded contract
