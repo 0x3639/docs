@@ -1,12 +1,12 @@
 ---
 sidebar_position: 1
-slug: node-status
-title: Node Status
+slug: go-zenon-node-status
+title: Go-Zenon Node Status
 ---
 
-# Test if a Node is Reachable and Synced
+# Go-Zenon Node Status
 
-When running a Node, it’s important to check its status to ensure it’s operational and in sync with the network. This guide explains how to use the `curl` command to query the sync status of your node. Instructions are provided for both Windows and Linux/macOS users.
+When running a Node in Zenon Network, it’s important to check its status to ensure it’s operational and in sync with the network. This guide explains how to use the `curl` command to query the sync status of your Node. Instructions are provided for both Windows and Linux/macOS users.
 
 ## Understanding Sync Status
 
@@ -29,6 +29,7 @@ curl -X POST https://my.hc1node.com:35997 \
 -H "Content-Type: application/json" \
 -d '{"jsonrpc": "2.0", "id": 40, "method": "stats.syncInfo", "params": []}'
 ```
+*Note: Replace https://my.hc1node.com:35997 with the address of node being tested.*
 
 ## Instructions for Windows Users
 
@@ -42,6 +43,7 @@ curl -X POST https://my.hc1node.com:35997 ^
 -H "Content-Type: application/json" ^
 -d "{\"jsonrpc\": \"2.0\", \"id\": 40, \"method\": \"stats.syncInfo\", \"params\": []}"
 ```
+*Note: Replace https://my.hc1node.com:35997 with the address of node being tested.*
 
 ## Understanding the Response
 
