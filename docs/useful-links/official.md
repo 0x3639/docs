@@ -74,9 +74,9 @@ title: Official
 
 - [wZNN on Uniswap](https://app.uniswap.org/swap?inputCurrency=ETH&outputCurrency=0xb2e96a63479c2edd2fd62b382c89d5ca79f572d3)
 - [wQSR on Uniswap](https://app.uniswap.org/swap?inputCurrency=0x96546AFE4a21515A3a30CD3fd64A70eB478DC174&outputCurrency=0xb2e96a63479c2edd2fd62b382c89d5ca79f572d3)
-
 - [wZNN on 1inch](https://app.1inch.io/#/1/simple/swap/ETH/0xb2e96a63479c2edd2fd62b382c89d5ca79f572d3/import-token)
 - [wQSR on 1inch](https://app.1inch.io/#/1/simple/swap/ETH/0x96546afe4a21515a3a30cd3fd64a70eb478dc174/import-token)
 
 ## Audits
+
 - [Chainsafe Bridge Contract Audit](https://github.com/ChainSafe/audits/blob/main/Zenon%20Network/zenon-05-2023.pdf)
