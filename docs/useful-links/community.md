@@ -70,4 +70,4 @@ If the node is up and running and fully synced you will see `"state":2` in the r
 
 ## Socials
 
-- (Zenon.chat)[https://www.zenon.chat/]
+- [Zenon.chat](https://www.zenon.chat/)
