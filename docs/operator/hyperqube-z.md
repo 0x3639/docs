@@ -6,24 +6,22 @@ title: HyperQube_Z
 
 ## Background
 
-HyperQubeZ (hyperqube_z) is the first and flagship extension chain of the Hyperqube ecosystem. The Hyperqube ecosystem is maintained by HyperCore.one and is a set of Layer 2 extension chains for Zenon that add functionality and scalability to the ecosystem. Hyperqube_z uses the same Zenon architecture as mainnet and will be used for builder collaboration and rapid development of experimental features in a production betanet. Successful features and upgrades may eventually be ported to mainnet.
+HyperQube_z is the first and flagship extension chain of the Hyperqube ecosystem. The Hyperqube ecosystem is maintained by HyperCore.one and is a set of Layer 2 extension chains for Zenon that add functionality and scalability to the ecosystem. HyperQube_z uses the same Zenon architecture as mainnet and will be used for builder collaboration and rapid development of experimental features in a production betanet. Successful features and upgrades may eventually be ported to mainnet.
 
 ## Prerequisites
-- Instructions assume a local computer running Linux (see VirtualBox for Mac/Windows users)
+- Instructions assume a local computer running Linux (see [VirtualBox](https://virtualbox.org) for Mac/Windows users)
 - VPS with minimum specs:
   - 2 vCPU
   - 4GB RAM
   - 50GB Storage
 - Basic command line knowledge
 
-## Register a Pillar
+## Register a HyperQube_z Pillar
 
 To sign up you will need a low spec Pillar vps (2vCPU & 4G Ram) and a local computer that will create a wallet that will be used by Syrius to manage the Pillar.
 
 ### Step 1 - Create a Wallet
-On a local computer, create a wallet that will be used for the Pillar and rewards address. This step will generate your **Pillar Address** which can also serve as your **rewards address**.
-
-_Estimated time: 10 minutes_
+On a local linux computer, create a wallet that will be used for the Pillar and rewards address. This step will generate your **Pillar Address** which can also serve as your **rewards address**.
 
 1. Install Go (version 1.21 or higher):
 ```bash
@@ -60,7 +58,7 @@ make nomctl
 This address is BOTH the **Pillar address** and **Pillar rewards address**. _Take note of the Pillar Address as you'll need it later_.
 
 ### Step 2 - Setup the Pillar
-You will need a validator node. Hyperqube_z is designed to consume less resources than mainnet. Its block speed was reduced from 10 seconds to a minute. We hope to keep the node requirements small. We recommend a minimum of 2cpu and 4gb ram.
+You will need a validator node hosted on a VPS. We do NOT recommend you run the Pillar locally at home. Hyperqube_z is designed to consume less resources than mainnet. Its block speed was reduced from 10 seconds to a minute. We hope to keep the node requirements small. We recommend a minimum of 2cpu and 4gb ram.
 
 1. Install Go (version 1.21 or higher):
 ```bash
@@ -90,12 +88,11 @@ make nomctl
 ```bash
 ls ~/.hqzd/wallet
 ```
-This address is the **Pillar Producer address**. _Take note of both addresses as you'll need them for registration:_
+This address is the **Pillar Producer address**. _Take note of this address as you'll need it for registration:_
 - Pillar/Rewards Address (from Step 1)
 - Producer Address (from Step 2)
 
 ### Step 3 - Register the Pillar
-_Estimated time: 5 minutes_
 
 Steps to Register:
 
