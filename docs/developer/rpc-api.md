@@ -35,6 +35,11 @@ The bash command `znn-cli enableRPC` can be used with the [Dart CLI](/wallet/cli
 * [embedded.token](#embeddedtoken)
 * [embedded.swap](#embeddedswap)
 * [embedded.stake](#embeddedstake)
+* [embedded.accelerator](#embeddedaccelerator)
+* [embedded.spork](#embeddedspork)
+* [embedded.htlc](#embeddedhtlc)
+* [embedded.bridge](#embeddedbridge)
+* [embedded.liquidity](#embeddedliquidity)
 
 ## embedded.pillar
 
@@ -47,6 +52,8 @@ The bash command `znn-cli enableRPC` can be used with the [Dart CLI](/wallet/cli
 * [embedded.pillar.getDepositedQsr](#embeddedpillargetdepositedqsr)
 * [embedded.pillar.getUncollectedReward](#embeddedpillargetuncollectedreward)
 * [embedded.pillar.getFrontierRewardByPage](#embeddedpillargetfrontierrewardbypage)
+* [embedded.pillar.getPillarEpochHistory](#embeddedpillargetpillarepochhistory)
+* [embedded.pillar.getPillarsHistoryByEpoch](#embeddedpillargetpillarshistorybyepoch)
 
 ### embedded.pillar.getQsrRegistrationCost
 
@@ -466,6 +473,123 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
                 "epoch": 112,
                 "znnAmount": 5000,
                 "qsrAmount": 0
+            }
+        ]
+    }
+}
+```
+
+### embedded.pillar.getPillarEpochHistory
+
+> This API call will return the epoch history for a specific pillar, showing its performance across epochs.
+
+#### Request
+
+3 parameters:
+* first parameter of type `string` that represents the pillar name
+* second parameter of type `number` that represents the page index
+* third parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 30,
+    "method": "embedded.pillar.getPillarEpochHistory",
+    "params": ["Pillar1", 0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of epoch entries
+* `list` - array of pillar epoch history objects containing:
+  * `name` - pillar name
+  * `epoch` - epoch number
+  * `giveBlockRewardPercentage` - percentage of block rewards given to delegators
+  * `giveDelegateRewardPercentage` - percentage of delegate rewards given to delegators
+  * `producedBlockNum` - number of blocks produced in the epoch
+  * `expectedBlockNum` - number of blocks expected to produce
+  * `weight` - pillar weight in the epoch
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 30,
+    "result": {
+        "count": 50,
+        "list": [
+            {
+                "name": "Pillar1",
+                "epoch": 125,
+                "giveBlockRewardPercentage": 0,
+                "giveDelegateRewardPercentage": 100,
+                "producedBlockNum": 95,
+                "expectedBlockNum": 100,
+                "weight": 1500000000000
+            },
+            {
+                "name": "Pillar1",
+                "epoch": 124,
+                "giveBlockRewardPercentage": 0,
+                "giveDelegateRewardPercentage": 100,
+                "producedBlockNum": 98,
+                "expectedBlockNum": 100,
+                "weight": 1500000000000
+            }
+        ]
+    }
+}
+```
+
+### embedded.pillar.getPillarsHistoryByEpoch
+
+> This API call will return the history of all pillars for a specific epoch.
+
+#### Request
+
+3 parameters:
+* first parameter of type `number` that represents the epoch number
+* second parameter of type `number` that represents the page index
+* third parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 31,
+    "method": "embedded.pillar.getPillarsHistoryByEpoch",
+    "params": [125, 0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of pillars in the epoch
+* `list` - array of pillar epoch history objects (same structure as getPillarEpochHistory)
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 31,
+    "result": {
+        "count": 30,
+        "list": [
+            {
+                "name": "Pillar1",
+                "epoch": 125,
+                "giveBlockRewardPercentage": 0,
+                "giveDelegateRewardPercentage": 100,
+                "producedBlockNum": 95,
+                "expectedBlockNum": 100,
+                "weight": 1500000000000
+            },
+            {
+                "name": "Pillar2",
+                "epoch": 125,
+                "giveBlockRewardPercentage": 10,
+                "giveDelegateRewardPercentage": 90,
+                "producedBlockNum": 100,
+                "expectedBlockNum": 100,
+                "weight": 1600000000000
             }
         ]
     }
@@ -1305,6 +1429,1326 @@ Same information as [embedded.token.getAll](#embeddedtokengetall)
         "isBurnable": true,
         "isMintable": true,
         "isUtility": true
+    }
+}
+```
+
+## embedded.accelerator
+
+* [embedded.accelerator.getAll](#embeddedacceleratorgetall)
+* [embedded.accelerator.getProjectById](#embeddedacceleratorgetprojectbyid)
+* [embedded.accelerator.getPhaseById](#embeddedacceleratorgetphasebyid)
+* [embedded.accelerator.getVoteBreakdown](#embeddedacceleratorgetvotebreakdown)
+* [embedded.accelerator.getPillarVotes](#embeddedacceleratorgetpillarvotes)
+
+### embedded.accelerator.getAll
+
+> This API call will return a paginated list of all Accelerator-Z projects, sorted by last update timestamp.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the page index
+* second parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "embedded.accelerator.getAll",
+    "params": [0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of projects
+* `list` - array of project objects containing:
+  * `id` - project hash identifier
+  * `owner` - address of project owner
+  * `name` - project name
+  * `description` - project description
+  * `url` - project URL
+  * `znnFundsNeeded` - ZNN funds requested
+  * `qsrFundsNeeded` - QSR funds requested
+  * `creationTimestamp` - creation timestamp
+  * `lastUpdateTimestamp` - last update timestamp
+  * `status` - project status
+  * `phaseIds` - array of phase hash identifiers
+  * `votes` - voting information
+  * `phases` - array of phase objects
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "count": 1,
+        "list": [
+            {
+                "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+                "owner": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+                "name": "Example Project",
+                "description": "This is an example accelerator project",
+                "url": "https://example.com",
+                "znnFundsNeeded": 10000000000,
+                "qsrFundsNeeded": 100000000000,
+                "creationTimestamp": 1640000000,
+                "lastUpdateTimestamp": 1640100000,
+                "status": 0,
+                "phaseIds": [],
+                "votes": {
+                    "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+                    "total": 10,
+                    "yes": 8,
+                    "no": 2
+                },
+                "phases": []
+            }
+        ]
+    }
+}
+```
+
+### embedded.accelerator.getProjectById
+
+> This API call will return details about a specific Accelerator-Z project by its hash identifier.
+
+#### Request
+
+One parameter of type `string` that represents the project hash.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "embedded.accelerator.getProjectById",
+    "params": ["c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]
+}
+```
+
+#### Response
+
+Same project object structure as in `getAll` response.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+        "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "owner": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "name": "Example Project",
+        "description": "This is an example accelerator project",
+        "url": "https://example.com",
+        "znnFundsNeeded": 10000000000,
+        "qsrFundsNeeded": 100000000000,
+        "creationTimestamp": 1640000000,
+        "lastUpdateTimestamp": 1640100000,
+        "status": 0,
+        "phaseIds": [],
+        "votes": {
+            "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+            "total": 10,
+            "yes": 8,
+            "no": 2
+        },
+        "phases": []
+    }
+}
+```
+
+### embedded.accelerator.getPhaseById
+
+> This API call will return details about a specific project phase by its hash identifier.
+
+#### Request
+
+One parameter of type `string` that represents the phase hash.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "embedded.accelerator.getPhaseById",
+    "params": ["d24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]
+}
+```
+
+#### Response
+
+* Phase object containing:
+  * `id` - phase hash identifier
+  * `projectId` - parent project hash
+  * `name` - phase name
+  * `description` - phase description
+  * `url` - phase URL
+  * `znnFundsNeeded` - ZNN funds requested for phase
+  * `qsrFundsNeeded` - QSR funds requested for phase
+  * `creationTimestamp` - creation timestamp
+  * `acceptedTimestamp` - acceptance timestamp
+  * `status` - phase status
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+        "id": "d24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "projectId": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "name": "Phase 1",
+        "description": "First phase of the project",
+        "url": "https://example.com/phase1",
+        "znnFundsNeeded": 5000000000,
+        "qsrFundsNeeded": 50000000000,
+        "creationTimestamp": 1640200000,
+        "acceptedTimestamp": 0,
+        "status": 0
+    }
+}
+```
+
+### embedded.accelerator.getVoteBreakdown
+
+> This API call will return the voting breakdown for a given project or phase.
+
+#### Request
+
+One parameter of type `string` that represents the project or phase hash.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "embedded.accelerator.getVoteBreakdown",
+    "params": ["c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]
+}
+```
+
+#### Response
+
+* `id` - hash identifier
+* `total` - total number of votes
+* `yes` - number of yes votes
+* `no` - number of no votes
+* `voteDetails` - array of individual pillar votes
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+        "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "total": 10,
+        "yes": 8,
+        "no": 2,
+        "voteDetails": [
+            {
+                "pillarName": "Pillar1",
+                "vote": 0
+            },
+            {
+                "pillarName": "Pillar2", 
+                "vote": 1
+            }
+        ]
+    }
+}
+```
+
+### embedded.accelerator.getPillarVotes
+
+> This API call will return the votes of a specific pillar for given project/phase hashes.
+
+#### Request
+
+2 parameters:
+* first parameter of type `string` that represents the pillar name
+* second parameter of type `array` that contains hash identifiers
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "embedded.accelerator.getPillarVotes",
+    "params": ["Pillar1", ["c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]]
+}
+```
+
+#### Response
+
+Array of pillar vote objects:
+* `id` - hash identifier
+* `pillarName` - name of the pillar
+* `vote` - vote value (0 = yes, 1 = no, 2 = abstain)
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "result": [
+        {
+            "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+            "pillarName": "Pillar1",
+            "vote": 0
+        }
+    ]
+}
+```
+
+## embedded.spork
+
+* [embedded.spork.getAll](#embeddedsporkgetall)
+
+### embedded.spork.getAll
+
+> This API call will return a paginated list of all network sporks. Sporks are used to activate or deactivate specific network features and upgrades.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the page index
+* second parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "embedded.spork.getAll",
+    "params": [0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of sporks
+* `list` - array of spork objects containing:
+  * `id` - spork hash identifier
+  * `name` - spork name
+  * `description` - spork description
+  * `activated` - bool indicating if spork is active
+  * `enforcementHeight` - momentum height when spork becomes active
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "count": 2,
+        "list": [
+            {
+                "id": "34d8bef1b8a4de759450e3636d9f70ed5fae1b1e5f86e0fa1a4633de1323b315",
+                "name": "htlc-spork",
+                "description": "Activates HTLC (Hash Time-Locked Contract) functionality",
+                "activated": true,
+                "enforcementHeight": 1000000
+            },
+            {
+                "id": "45d8bef1b8a4de759450e3636d9f70ed5fae1b1e5f86e0fa1a4633de1323b316",
+                "name": "bridge-spork",
+                "description": "Activates cross-chain bridge functionality",
+                "activated": false,
+                "enforcementHeight": 0
+            }
+        ]
+    }
+}
+```
+
+## embedded.htlc
+
+* [embedded.htlc.getById](#embeddedhtlcgetbyid)
+* [embedded.htlc.getProxyUnlockStatus](#embeddedhtlcgetproxyunlockstatus)
+
+### embedded.htlc.getById
+
+> This API call will return information about a specific Hash Time-Locked Contract (HTLC) by its identifier.
+
+#### Request
+
+One parameter of type `string` that represents the HTLC hash identifier.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "embedded.htlc.getById",
+    "params": ["a24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]
+}
+```
+
+#### Response
+
+HTLC object containing:
+* `id` - HTLC hash identifier
+* `timeLocked` - address of the time lock participant
+* `hashLocked` - address of the hash lock participant
+* `tokenStandard` - token standard (ZTS) being locked
+* `amount` - amount locked in the contract
+* `expirationTime` - expiration timestamp
+* `hashType` - type of hash function used (0 = SHA256, 1 = SHA3-256)
+* `keyMaxSize` - maximum size of the preimage key
+* `hashLock` - hash lock value
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "id": "a24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "timeLocked": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "hashLocked": "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk",
+        "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+        "amount": 10000000000,
+        "expirationTime": 1640200000,
+        "hashType": 0,
+        "keyMaxSize": 32,
+        "hashLock": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+    }
+}
+```
+
+### embedded.htlc.getProxyUnlockStatus
+
+> This API call will check the proxy unlock status for a specific address in the HTLC contract.
+
+#### Request
+
+One parameter of type `string` that represents the address.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "embedded.htlc.getProxyUnlockStatus",
+    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt"]
+}
+```
+
+#### Response
+
+`bool` - true if proxy unlock is enabled for the address, false otherwise
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": true
+}
+```
+
+## embedded.bridge
+
+* [embedded.bridge.getAllNetworks](#embeddedbridgegetallnetworks)
+* [embedded.bridge.getNetworkInfo](#embeddedbridgegetnetworkinfo)
+* [embedded.bridge.getOrchestratorInfo](#embeddedbridgegetorchestratorinfo)
+* [embedded.bridge.getTimeChallengesInfo](#embeddedbridgegettimechallengesinfo)
+* [embedded.bridge.getSecurityInfo](#embeddedbridgegetsecurityinfo)
+* [embedded.bridge.getBridgeInfo](#embeddedbridgegetbridgeinfo)
+* [embedded.bridge.getWrapTokenRequestById](#embeddedbridgegetwraptokenrequestbyid)
+* [embedded.bridge.getAllWrapTokenRequests](#embeddedbridgegetallwraptokenrequests)
+* [embedded.bridge.getAllWrapTokenRequestsByToAddress](#embeddedbridgegetallwraptokenrequestsbytoaddress)
+* [embedded.bridge.getAllWrapTokenRequestsByToAddressNetworkClassAndChainId](#embeddedbridgegetallwraptokenrequestsbytoaddressnetworkclassandchainid)
+* [embedded.bridge.getAllUnsignedWrapTokenRequests](#embeddedbridgegetallunsignedwraptokenrequests)
+* [embedded.bridge.getUnwrapTokenRequestByHashAndLog](#embeddedbridgegetunwraptokenrequestbyhashandlog)
+* [embedded.bridge.getAllUnwrapTokenRequests](#embeddedbridgegetallunwraptokenrequests)
+* [embedded.bridge.getAllUnwrapTokenRequestsByToAddress](#embeddedbridgegetallunwraptokenrequestsbytoaddress)
+* [embedded.bridge.getFeeTokenPair](#embeddedbridgegetfeetokenpair)
+
+### embedded.bridge.getAllNetworks
+
+> This API call will return a paginated list of all registered bridge networks.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the page index
+* second parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "embedded.bridge.getAllNetworks",
+    "params": [0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of networks
+* `list` - array of network objects containing:
+  * `networkClass` - class of network (1 = EVM, 2 = non-EVM)
+  * `chainId` - unique chain identifier
+  * `name` - network name
+  * `contractAddress` - bridge contract address on target network
+  * `metadata` - additional network metadata
+  * `tokenPairs` - array of supported token pairs
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "count": 2,
+        "list": [
+            {
+                "networkClass": 1,
+                "chainId": 1,
+                "name": "Ethereum Mainnet",
+                "contractAddress": "0x1234567890abcdef1234567890abcdef12345678",
+                "metadata": "{}",
+                "tokenPairs": []
+            },
+            {
+                "networkClass": 1,
+                "chainId": 56,
+                "name": "BSC Mainnet",
+                "contractAddress": "0xabcdef1234567890abcdef1234567890abcdef12",
+                "metadata": "{}",
+                "tokenPairs": []
+            }
+        ]
+    }
+}
+```
+
+### embedded.bridge.getNetworkInfo
+
+> This API call will return information about a specific bridge network.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the network class (1 = EVM, 2 = non-EVM)
+* second parameter of type `number` that represents the chain ID
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "embedded.bridge.getNetworkInfo",
+    "params": [1, 1]
+}
+```
+
+#### Response
+
+Network information object containing:
+* `networkClass` - class of network (1 = EVM, 2 = non-EVM)
+* `chainId` - unique chain identifier
+* `name` - network name
+* `contractAddress` - bridge contract address on target network
+* `metadata` - additional network metadata
+* `tokenPairs` - array of supported token pairs
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+        "networkClass": 1,
+        "chainId": 1,
+        "name": "Ethereum Mainnet",
+        "contractAddress": "0x1234567890abcdef1234567890abcdef12345678",
+        "metadata": "{}",
+        "tokenPairs": [
+            {
+                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+                "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+                "bridgeable": true,
+                "redeemable": true,
+                "owned": true,
+                "minAmount": 1000000000
+            }
+        ]
+    }
+}
+```
+
+### embedded.bridge.getOrchestratorInfo
+
+> This API call will return information about the bridge orchestrator.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "embedded.bridge.getOrchestratorInfo",
+    "params": []
+}
+```
+
+#### Response
+
+* `windowSize` - orchestrator window size
+* `keyGenThreshold` - key generation threshold
+* `confirmationsToFinality` - confirmations required for finality
+* `estimatedMomentumTime` - estimated momentum time in seconds
+* `allowKeyGenHeight` - height at which key generation is allowed
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+        "windowSize": 50,
+        "keyGenThreshold": 67,
+        "confirmationsToFinality": 2,
+        "estimatedMomentumTime": 10,
+        "allowKeyGenHeight": 500000
+    }
+}
+```
+
+### embedded.bridge.getTimeChallengesInfo
+
+> This API call will return time challenge information for bridge methods.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "embedded.bridge.getTimeChallengesInfo",
+    "params": []
+}
+```
+
+#### Response
+
+Array of time challenge objects containing:
+* `methodName` - name of the bridge method
+* `challengeStartHeight` - momentum height when challenge starts
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": [
+        {
+            "methodName": "ChangeTssECDSAPubKey",
+            "challengeStartHeight": 450000
+        },
+        {
+            "methodName": "HaltBridge",
+            "challengeStartHeight": 460000
+        }
+    ]
+}
+```
+
+### embedded.bridge.getSecurityInfo
+
+> This API call will return security information for the bridge.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "embedded.bridge.getSecurityInfo",
+    "params": []
+}
+```
+
+#### Response
+
+Security information object containing:
+* `guardians` - array of guardian addresses
+* `guardiansVotes` - array of guardian votes
+* `administratorDelay` - delay for administrator actions
+* `softDelay` - soft delay period
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+        "guardians": [
+            "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+            "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk"
+        ],
+        "guardiansVotes": [
+            "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt"
+        ],
+        "administratorDelay": 172800,
+        "softDelay": 86400
+    }
+}
+```
+
+### embedded.bridge.getBridgeInfo
+
+> This API call will return general information about the bridge status.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "embedded.bridge.getBridgeInfo",
+    "params": []
+}
+```
+
+#### Response
+
+Bridge information object containing:
+* `administrator` - administrator address
+* `compressedTssECDSAPubKey` - compressed TSS ECDSA public key
+* `decompressedTssECDSAPubKey` - decompressed TSS ECDSA public key
+* `allowKeyGen` - whether key generation is allowed
+* `halted` - whether the bridge is halted
+* `unhaltedAt` - momentum height when bridge was unhalted
+* `unhaltDurationInMomentums` - duration of halt in momentums
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "result": {
+        "administrator": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "compressedTssECDSAPubKey": "AsAQx1M3LVXCuozDOqO5b9adj/PqBTVGm8cf07PZnog5",
+        "decompressedTssECDSAPubKey": "BMAQx1M3LVXCuozDOqO5b9adj/PqBTVGm8cf07PZnog5Eu8bMay1GZFEwMJOXJqSLXxDV7cCeEHLkcLXFAm5NANE",
+        "allowKeyGen": true,
+        "halted": false,
+        "unhaltedAt": 0,
+        "unhaltDurationInMomentums": 5
+    }
+}
+```
+
+### embedded.bridge.getWrapTokenRequestById
+
+> This API call will return details about a specific wrap token request by its identifier.
+
+#### Request
+
+One parameter of type `string` that represents the wrap token request hash.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "embedded.bridge.getWrapTokenRequestById",
+    "params": ["d24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]
+}
+```
+
+#### Response
+
+Wrap token request object containing:
+* `id` - request hash identifier
+* `networkClass` - network class of destination
+* `chainId` - chain ID of destination
+* `toAddress` - destination address on target chain
+* `tokenStandard` - ZTS token being wrapped
+* `tokenAddress` - token address on destination chain
+* `amount` - amount to wrap
+* `fee` - bridge fee
+* `signature` - request signature
+* `creationMomentumHeight` - creation momentum height
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 6,
+    "result": {
+        "id": "d24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "networkClass": 1,
+        "chainId": 1,
+        "toAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+        "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "amount": 10000000000,
+        "fee": 100000000,
+        "signature": "vU8QaF1VoWGFK2UVvQPf6pwKNJ5IfZ9fPruCpmQPmKkEqU5YoWJAY5xE4h+FSQRSfhFWLQEMMzqRDPqrFkLZWAE=",
+        "creationMomentumHeight": 1000000
+    }
+}
+```
+
+### embedded.bridge.getAllWrapTokenRequests
+
+> This API call will return a paginated list of all wrap token requests.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the page index
+* second parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "embedded.bridge.getAllWrapTokenRequests",
+    "params": [0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of wrap requests
+* `list` - array of wrap token request objects (same structure as getWrapTokenRequestById)
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 7,
+    "result": {
+        "count": 1,
+        "list": [
+            {
+                "id": "d24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+                "networkClass": 1,
+                "chainId": 1,
+                "toAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+                "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+                "amount": 10000000000,
+                "fee": 100000000,
+                "signature": "vU8QaF1VoWGFK2UVvQPf6pwKNJ5IfZ9fPruCpmQPmKkEqU5YoWJAY5xE4h+FSQRSfhFWLQEMMzqRDPqrFkLZWAE=",
+                "creationMomentumHeight": 1000000
+            }
+        ]
+    }
+}
+```
+
+### embedded.bridge.getAllWrapTokenRequestsByToAddress
+
+> This API call will return wrap token requests filtered by destination address.
+
+#### Request
+
+3 parameters:
+* first parameter of type `string` that represents the destination address
+* second parameter of type `number` that represents the page index
+* third parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 8,
+    "method": "embedded.bridge.getAllWrapTokenRequestsByToAddress",
+    "params": ["0x5fbdb2315678afecb367f032d93f642f64180aa3", 0, 10]
+}
+```
+
+#### Response
+
+Same structure as getAllWrapTokenRequests response.
+
+### embedded.bridge.getAllWrapTokenRequestsByToAddressNetworkClassAndChainId
+
+> This API call will return wrap token requests filtered by destination address, network class, and chain ID.
+
+#### Request
+
+5 parameters:
+* first parameter of type `string` that represents the destination address
+* second parameter of type `number` that represents the network class
+* third parameter of type `number` that represents the chain ID
+* fourth parameter of type `number` that represents the page index
+* fifth parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 9,
+    "method": "embedded.bridge.getAllWrapTokenRequestsByToAddressNetworkClassAndChainId",
+    "params": ["0x5fbdb2315678afecb367f032d93f642f64180aa3", 1, 1, 0, 10]
+}
+```
+
+#### Response
+
+Same structure as getAllWrapTokenRequests response.
+
+### embedded.bridge.getAllUnsignedWrapTokenRequests
+
+> This API call will return all wrap token requests that haven't been signed yet.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the page index
+* second parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "embedded.bridge.getAllUnsignedWrapTokenRequests",
+    "params": [0, 10]
+}
+```
+
+#### Response
+
+Same structure as getAllWrapTokenRequests response, but only includes unsigned requests.
+
+### embedded.bridge.getUnwrapTokenRequestByHashAndLog
+
+> This API call will return an unwrap token request by transaction hash and log index.
+
+#### Request
+
+2 parameters:
+* first parameter of type `string` that represents the transaction hash
+* second parameter of type `number` that represents the log index
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 11,
+    "method": "embedded.bridge.getUnwrapTokenRequestByHashAndLog",
+    "params": ["e24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5", 0]
+}
+```
+
+#### Response
+
+Unwrap token request object containing:
+* `registrationMomentumHeight` - registration momentum height
+* `networkClass` - source network class
+* `chainId` - source chain ID
+* `transactionHash` - transaction hash on source chain
+* `logIndex` - log index in transaction
+* `toAddress` - destination Zenon address
+* `tokenStandard` - ZTS token standard
+* `tokenAddress` - token address on source chain
+* `amount` - amount to unwrap
+* `signature` - request signature
+* `redeemed` - whether request has been redeemed
+* `revoked` - whether request has been revoked
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 11,
+    "result": {
+        "registrationMomentumHeight": 1000100,
+        "networkClass": 1,
+        "chainId": 1,
+        "transactionHash": "e24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+        "logIndex": 0,
+        "toAddress": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+        "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "amount": 10000000000,
+        "signature": "vU8QaF1VoWGFK2UVvQPf6pwKNJ5IfZ9fPruCpmQPmKkEqU5YoWJAY5xE4h+FSQRSfhFWLQEMMzqRDPqrFkLZWAE=",
+        "redeemed": 0,
+        "revoked": 0
+    }
+}
+```
+
+### embedded.bridge.getAllUnwrapTokenRequests
+
+> This API call will return a paginated list of all unwrap token requests.
+
+#### Request
+
+2 parameters:
+* first parameter of type `number` that represents the page index
+* second parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 12,
+    "method": "embedded.bridge.getAllUnwrapTokenRequests",
+    "params": [0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of unwrap requests
+* `list` - array of unwrap token request objects (same structure as getUnwrapTokenRequestByHashAndLog)
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 12,
+    "result": {
+        "count": 1,
+        "list": [
+            {
+                "registrationMomentumHeight": 1000100,
+                "networkClass": 1,
+                "chainId": 1,
+                "transactionHash": "e24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
+                "logIndex": 0,
+                "toAddress": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+                "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+                "amount": 10000000000,
+                "signature": "vU8QaF1VoWGFK2UVvQPf6pwKNJ5IfZ9fPruCpmQPmKkEqU5YoWJAY5xE4h+FSQRSfhFWLQEMMzqRDPqrFkLZWAE=",
+                "redeemed": 0,
+                "revoked": 0
+            }
+        ]
+    }
+}
+```
+
+### embedded.bridge.getAllUnwrapTokenRequestsByToAddress
+
+> This API call will return unwrap token requests filtered by destination Zenon address.
+
+#### Request
+
+3 parameters:
+* first parameter of type `string` that represents the destination Zenon address
+* second parameter of type `number` that represents the page index
+* third parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 13,
+    "method": "embedded.bridge.getAllUnwrapTokenRequestsByToAddress",
+    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt", 0, 10]
+}
+```
+
+#### Response
+
+Same structure as getAllUnwrapTokenRequests response.
+
+### embedded.bridge.getFeeTokenPair
+
+> This API call will return the fee configuration for a specific token.
+
+#### Request
+
+One parameter of type `string` that represents the ZTS token standard.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 14,
+    "method": "embedded.bridge.getFeeTokenPair",
+    "params": ["zts1qsrxxxxxxxxxxxxxmrhjll"]
+}
+```
+
+#### Response
+
+Fee token pair object containing:
+* `tokenStandard` - ZTS token standard
+* `accumulatedFee` - accumulated fees for this token
+* `feePercentage` - fee percentage (basis points, e.g., 100 = 1%)
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 14,
+    "result": {
+        "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+        "accumulatedFee": 5000000000,
+        "feePercentage": 100
+    }
+}
+```
+
+## embedded.liquidity
+
+* [embedded.liquidity.getLiquidityInfo](#embeddedliquiditygetliquidityinfo)
+* [embedded.liquidity.getSecurityInfo](#embeddedliquiditygetsecurityinfo)
+* [embedded.liquidity.getTimeChallengesInfo](#embeddedliquiditygettimechallengesinfo)
+* [embedded.liquidity.getLiquidityStakeEntriesByAddress](#embeddedliquiditygetliquiditystakeentriesbyaddress)
+* [embedded.liquidity.getUncollectedReward](#embeddedliquiditygetuncollectedreward)
+* [embedded.liquidity.getFrontierRewardByPage](#embeddedliquiditygetfrontierrewardbypage)
+
+### embedded.liquidity.getLiquidityInfo
+
+> This API call will return general liquidity information.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "embedded.liquidity.getLiquidityInfo",
+    "params": []
+}
+```
+
+#### Response
+
+Liquidity information object containing:
+* `administrator` - administrator address
+* `isHalted` - whether liquidity operations are halted
+* `znnReward` - ZNN reward amount
+* `qsrReward` - QSR reward amount
+* `tokenTuples` - array of supported token pairs for liquidity
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "administrator": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "isHalted": false,
+        "znnReward": 187200000000,
+        "qsrReward": 500000000000,
+        "tokenTuples": [
+            {
+                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+                "znnPercentage": 50,
+                "qsrPercentage": 50,
+                "minAmount": 1000000000
+            }
+        ]
+    }
+}
+```
+
+### embedded.liquidity.getSecurityInfo
+
+> This API call will return security information for the liquidity contract.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "embedded.liquidity.getSecurityInfo",
+    "params": []
+}
+```
+
+#### Response
+
+Security information object containing:
+* `guardians` - array of guardian addresses
+* `guardiansVotes` - array of guardian votes
+* `administratorDelay` - delay for administrator actions
+* `softDelay` - soft delay period
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+        "guardians": [
+            "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+            "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk"
+        ],
+        "guardiansVotes": [
+            "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt"
+        ],
+        "administratorDelay": 172800,
+        "softDelay": 86400
+    }
+}
+```
+
+### embedded.liquidity.getTimeChallengesInfo
+
+> This API call will return time challenge information for liquidity methods.
+
+#### Request
+
+No parameters
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "embedded.liquidity.getTimeChallengesInfo",
+    "params": []
+}
+```
+
+#### Response
+
+Array of time challenge objects containing:
+* `methodName` - name of the liquidity method
+* `challengeStartHeight` - momentum height when challenge starts
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": [
+        {
+            "methodName": "NominateGuardians",
+            "challengeStartHeight": 450000
+        },
+        {
+            "methodName": "UnlockLiquidityEntries",
+            "challengeStartHeight": 460000
+        }
+    ]
+}
+```
+
+### embedded.liquidity.getLiquidityStakeEntriesByAddress
+
+> This API call will return liquidity stake entries for a specific address.
+
+#### Request
+
+3 parameters:
+* first parameter of type `string` that represents the address
+* second parameter of type `number` that represents the page index
+* third parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "embedded.liquidity.getLiquidityStakeEntriesByAddress",
+    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt", 0, 10]
+}
+```
+
+#### Response
+
+* `totalAmount` - total staked amount
+* `totalWeightedAmount` - total weighted amount considering duration
+* `count` - total number of entries
+* `list` - array of stake entry objects containing:
+  * `amount` - staked amount
+  * `tokenStandard` - token standard (ZTS)
+  * `weightedAmount` - weighted amount based on duration
+  * `startTime` - stake start timestamp
+  * `revokeTime` - revoke timestamp
+  * `expirationTime` - expiration timestamp
+  * `stakeAddress` - staking address
+  * `id` - stake entry hash identifier
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+        "totalAmount": 100000000000,
+        "totalWeightedAmount": 150000000000,
+        "count": 1,
+        "list": [
+            {
+                "amount": 100000000000,
+                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
+                "weightedAmount": 150000000000,
+                "startTime": 1640000000,
+                "revokeTime": 0,
+                "expirationTime": 1671536000,
+                "stakeAddress": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+                "id": "b24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"
+            }
+        ]
+    }
+}
+```
+
+### embedded.liquidity.getUncollectedReward
+
+> This API call will return uncollected liquidity rewards for an address.
+
+#### Request
+
+One parameter of type `string` that represents the address.
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "embedded.liquidity.getUncollectedReward",
+    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt"]
+}
+```
+
+#### Response
+
+Reward deposit object containing:
+* `address` - address eligible for rewards
+* `znnAmount` - uncollected ZNN amount
+* `qsrAmount` - uncollected QSR amount
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+        "address": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "znnAmount": 10000000000,
+        "qsrAmount": 50000000000
+    }
+}
+```
+
+### embedded.liquidity.getFrontierRewardByPage
+
+> This API call will return paginated reward history for liquidity providers.
+
+#### Request
+
+3 parameters:
+* first parameter of type `string` that represents the address
+* second parameter of type `number` that represents the page index
+* third parameter of type `number` that represents the page size
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "embedded.liquidity.getFrontierRewardByPage",
+    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt", 0, 10]
+}
+```
+
+#### Response
+
+* `count` - total number of reward entries
+* `list` - array of reward history entries containing:
+  * `epoch` - reward epoch number
+  * `znnAmount` - ZNN reward amount
+  * `qsrAmount` - QSR reward amount
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "result": {
+        "count": 2,
+        "list": [
+            {
+                "epoch": 10,
+                "znnAmount": 5000000000,
+                "qsrAmount": 25000000000
+            },
+            {
+                "epoch": 9,
+                "znnAmount": 5000000000,
+                "qsrAmount": 25000000000
+            }
+        ]
     }
 }
 ```
