@@ -3,7 +3,7 @@ sidebar_position: 3
 title: Plasma Contract
 ---
 
-# embedded.plasma
+# Plasma RPC API
 
 The Plasma contract manages Plasma generation for transaction processing in the Zenon Network. Plasma is required for sending transactions and can be generated through Proof of Work (PoW) or by fusing QSR.
 

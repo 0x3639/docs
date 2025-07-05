@@ -3,7 +3,7 @@ sidebar_position: 2
 title: Pillar Contract
 ---
 
-# embedded.pillar
+# Pillar RPC API
 
 The Pillar contract manages the Pillar consensus nodes that secure the Zenon Network. Pillars are responsible for producing momentums and distributing rewards to delegators.
 
