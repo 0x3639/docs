@@ -1,0 +1,8 @@
+{
+  "label": "Core API",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Core API methods for interacting with Zenon's dual-ledger architecture, subscribing to network events, and retrieving node statistics."
+  }
+}
