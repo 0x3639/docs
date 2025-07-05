@@ -152,6 +152,13 @@ const config = {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
       },
+      algolia: {
+        appId: 'D9P80AGKM1',
+        apiKey: 'c5526c83817b32a24be924bc79f65b1d',
+        indexName: 'docs-0x3639',
+        contextualSearch: false,
+        searchPagePath: 'search',
+      },
       metadata: [
         { name: 'description', content: 'Zenon Docs - The official documentation' },
         {
