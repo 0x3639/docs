@@ -156,7 +156,7 @@ const config = {
         appId: 'D9P80AGKM1',
         apiKey: 'c5526c83817b32a24be924bc79f65b1d',
         indexName: 'docs-0x3639',
-        contextualSearch: false,
+        contextualSearch: true,
         searchPagePath: 'search',
       },
       metadata: [
