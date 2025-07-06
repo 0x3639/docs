@@ -27,7 +27,7 @@ title: Token
     "jsonrpc": "2.0",
     "id": 22,
     "method": "embedded.token.getAll",
-    "params": [0, 2]
+    "params": [0, 5]
 }
 ```
 
@@ -104,7 +104,7 @@ An array of `entries`:
     "jsonrpc": "2.0",
     "id": 24,
     "method": "embedded.token.getByOwner",
-    "params": ["z1qz5p95pa8c6wq9pvfkg642gjv4nnaayx6vhm2w", 0, 5]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9", 0, 5]
 }
 ```
 
