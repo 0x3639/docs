@@ -77,6 +77,11 @@ const config = {
             to: '/intro/getting-started',
           },
           {
+            label: 'API Playground',
+            position: 'left',
+            to: '/api-playground',
+          },
+          {
             href: 'https://github.com/zenon-network',
             label: 'GitHub',
             position: 'right',

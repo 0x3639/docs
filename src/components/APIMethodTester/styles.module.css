@@ -1,0 +1,209 @@
+/* API Method Tester Styles */
+.methodTester {
+  margin: 20px 0;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  gap: 10px;
+  padding: 10px 15px;
+  background: var(--ifm-background-surface-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.tryButton {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background: #6cef4b;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.tryButton:hover {
+  background: #5ad936;
+}
+
+.playgroundButton {
+  padding: 6px 12px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 4px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-color-content);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.playgroundButton:hover {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.form {
+  padding: 20px;
+  background: var(--ifm-background-color);
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: var(--ifm-background-surface-color);
+  border-radius: 4px;
+}
+
+.connected {
+  color: #6cef4b;
+  font-weight: bold;
+}
+
+.disconnected {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.parameters {
+  margin-bottom: 20px;
+}
+
+.parameters h4 {
+  margin: 0 0 15px 0;
+  color: var(--ifm-color-content);
+}
+
+.paramField {
+  margin-bottom: 15px;
+}
+
+.paramLabel {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--ifm-color-content);
+}
+
+.required {
+  color: #f44336;
+  margin-left: 3px;
+}
+
+.paramDescription {
+  color: var(--ifm-color-secondary);
+  font-size: 0.9em;
+  margin-bottom: 8px;
+}
+
+.paramInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 4px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-color-content);
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.executeButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background: #6cef4b;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.executeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.executeButton:hover:not(:disabled) {
+  background: #5ad936;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 4px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-color-content);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.error {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.response {
+  margin-top: 20px;
+}
+
+.response h4 {
+  margin: 0 0 10px 0;
+  color: var(--ifm-color-content);
+}
+
+/* Cleaned up - now using react-syntax-highlighter */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .tryButton,
+  .playgroundButton,
+  .executeButton,
+  .cancelButton {
+    width: 100%;
+  }
+  
+  .responseCode {
+    font-size: 0.8em;
+    min-height: 120px;
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form {
+    padding: 15px;
+  }
+  
+  .responseCode {
+    font-size: 0.75em;
+    padding: 10px;
+    min-height: 100px;
+    max-height: 250px;
+  }
+}
