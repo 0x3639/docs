@@ -26,7 +26,7 @@ One parameter of type `string` that represents the address.
     "jsonrpc": "2.0",
     "id": 11,
     "method": "embedded.plasma.get",
-    "params": ["z1qz5fskcw8q6zndyu2w5eps9cyk3ekn9ecvcngd"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -41,9 +41,9 @@ One parameter of type `string` that represents the address.
     "jsonrpc": "2.0",
     "id": 11,
     "result": {
-        "currentPlasma": 21000,
-        "maxPlasma": 210000,
-        "qsrAmount": 10000000000
+        "currentPlasma": 1701000,
+        "maxPlasma": 1701000,
+        "qsrAmount": "81000000000"
     }
 }
 ```
@@ -63,7 +63,7 @@ One parameter of type `string` that represents the address.
     "jsonrpc": "2.0",
     "id": 10,
     "method": "embedded.plasma.getEntriesByAddress",
-    "params": ["z1qph8dkzgq53e7jz5pgyp3njzm9rw0x3n5mxmgj", 0, 5]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9", 0, 5]
 }
 ```
 
@@ -81,13 +81,20 @@ One parameter of type `string` that represents the address.
     "jsonrpc": "2.0",
     "id": 10,
     "result": {
-        "count": 1,
+        "qsrAmount": "324000000000",
+        "count": 15,
         "list": [
             {
-                "qsrAmount": 1000000000,
-                "beneficiary": "z1qph8dkzgq53e7jz5pgyp3njzm9rw0x3n5mxmgj",
-                "expirationHeight": 10910,
-                "id": "f46d3427fb2b3f699b7ca2fa2863a74f4c78bb72c88b72b39fb5ba6cc016c26f"
+                "qsrAmount": "15000000000",
+                "beneficiary": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+                "expirationHeight": 3265557,
+                "id": "ec8913ffb3aac7eb08aea693b724e19f961ea42be87fd86840a159926a88b8db"
+            },
+            {
+                "qsrAmount": "30000000000",
+                "beneficiary": "z1qqrzv35d4wk6n7fkfygay5g2zpgxyaamk84rla",
+                "expirationHeight": 4504195,
+                "id": "4d9a97679424613c15de8bf8ba3efae31b7cbb77cbbd28e3ec2fbfc416a363bf"
             }
         ]
     }
