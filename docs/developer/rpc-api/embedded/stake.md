@@ -28,7 +28,7 @@ title: Stake
     "jsonrpc": "2.0",
     "id": 19,
     "method": "embedded.stake.getEntriesByAddress",
-    "params": ["z1qzpa55k8328ff0ys7jfakfvhw8k2cwm53f5d5u", 0, 5]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9", 0, 5]
 }
 ```
 
@@ -52,33 +52,33 @@ JSON object representing the staking entries:
     "jsonrpc": "2.0",
     "id": 19,
     "result": {
-        "totalAmount": 65000000000,
-        "totalWeightedAmount": 73000000000,
-        "count": 3,
+        "totalAmount": "11209634848359",
+        "totalWeightedAmount": "23540233181553",
+        "count": 8,
         "list": [
             {
-                "amount": 15000000000,
-                "weightedAmount": 15000000000,
-                "startTimestamp": 1607956630,
-                "expirationTimestamp": 1610548630,
-                "address": "z1qzpa55k8328ff0ys7jfakfvhw8k2cwm53f5d5u",
-                "id": "172fbda8a0b97fab5b79d4e7790c477e618dac416c9c0dc356267078f9afc549"
+                "amount": "5000000000000",
+                "weightedAmount": "10500000000000",
+                "startTimestamp": 1712527460,
+                "expirationTimestamp": 1743631460,
+                "address": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+                "id": "b281166fc58402d36beeed739964bde3b4d33c1d51b542adff55d66202c1a73d"
             },
             {
-              "amount": 25000000000,
-              "weightedAmount": 25000000000,
-              "startTimestamp": 1607956635,
-              "expirationTimestamp": 1610548645,
-              "address": "z1qzpa55k8328ff0ys7jfakfvhw8k2cwm53f5d5u",
-              "id": "272fbda8a0b97fab5b79d4e7790c477e618dac416c9c0dc356267078f9afc549"
+                "amount": "1200000000000",
+                "weightedAmount": "2520000000000",
+                "startTimestamp": 1731441270,
+                "expirationTimestamp": 1762545270,
+                "address": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+                "id": "bb07b4ba819060ec9282b0d3517262ef016e1982b4605bae3bcdd5b95e1fb9f5"
             },
             {
-              "amount": 35000000000,
-              "weightedAmount": 35000000000,
-              "startTimestamp": 1607956640,
-              "expirationTimestamp": 1610548660,
-              "address": "z1qzpa55k8328ff0ys7jfakfvhw8k2cwm53f5d5u",
-              "id": "372fbda8a0b97fab5b79d4e7790c477e618dac416c9c0dc356267078f9afc549"
+                "amount": "1000000000000",
+                "weightedAmount": "2100000000000",
+                "startTimestamp": 1737932890,
+                "expirationTimestamp": 1769036890,
+                "address": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+                "id": "81dc20b47380a3baaa4e783ac9b38c654051a04c758f5f12526498449c7c922a"
             }
         ]
     }
@@ -98,7 +98,7 @@ One parameter of type string that represents the address of the Stake
     "jsonrpc": "2.0",
     "id": 17,
     "method": "embedded.stake.getUncollectedReward",
-    "params": ["z1qzpa55k8328ff0ys7jfakfvhw8k2cwm53f5d5u"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -115,9 +115,9 @@ JSON object representing the uncollected reward:
     "jsonrpc": "2.0",
     "id": 6,
     "result": {
-        "address": "z1qzpa55k8328ff0ys7jfakfvhw8k2cwm53f5d5u",
-        "znnAmount": 0,
-        "qsrAmount": 100000000
+        "address": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+        "znnAmount": "0",
+        "qsrAmount": "37716448266"
     }
 }
 ```

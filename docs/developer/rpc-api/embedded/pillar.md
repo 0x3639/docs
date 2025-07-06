@@ -46,7 +46,7 @@ No parameters
 {
     "jsonrpc": "2.0",
     "id": 2,
-    "result": 15000000000000
+    "result": "32000000000000"
 }
 ```
 
@@ -159,7 +159,7 @@ An `array` of `entries` and each item in the list contains the following fields:
             "rank": 1,
             "type": 1,
             "ownerAddress": "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk",
-            "producerAddress": "z1qqna5fwl9cfd4h7xyg54qdg3nlxgjhntekdlw4",
+            "producerAddress": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
             "withdrawAddress": "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk",
             "giveMomentumRewardPercentage": 0,
             "giveDelegateRewardPercentage": 100,
@@ -189,7 +189,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillars
     "jsonrpc": "2.0",
     "id": 4,
     "method": "embedded.pillar.getByOwner",
-    "params": ["z1qqna5fwl9cfd4h7xyg54qdg3nlxgjhntekdlw4"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -208,9 +208,9 @@ Same information as [embedded.pillar.getAll](#embeddedpillargetall)
             "name": "testName",
             "rank": 14,
             "type": 1,
-            "ownerAddress": "z1qqna5fwl9cfd4h7xyg54qdg3nlxgjhntekdlw4",
+            "ownerAddress": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
             "producerAddress": "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk",
-            "withdrawAddress": "z1qqna5fwl9cfd4h7xyg54qdg3nlxgjhntekdlw4",
+            "withdrawAddress": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
             "giveMomentumRewardPercentage": 5,
             "giveDelegateRewardPercentage": 80,
             "isRevocable": false,
@@ -239,7 +239,7 @@ One parameter of type `string` that represents the name of the Pillar.
     "jsonrpc": "2.0",
     "id": 5,
     "method": "embedded.pillar.getByName",
-    "params": ["VPS_1"]
+    "params": ["DeeZNNutz.com"]
 }
 ```
 
@@ -257,9 +257,9 @@ Same information as [embedded.pillar.getAll](#embeddedpillargetall)
         "name": "VPS_1",
         "rank": 31,
         "type": 1,
-        "ownerAddress": "z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn",
-        "producerAddress": "z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn",
-        "withdrawAddress": "z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn",
+        "ownerAddress": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+        "producerAddress": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+        "withdrawAddress": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
         "giveMomentumRewardPercentage": 10,
         "giveDelegateRewardPercentage": 90,
         "isRevocable": true,
@@ -287,7 +287,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar.
     "jsonrpc": "2.0",
     "id": 8,
     "method": "embedded.pillar.getDelegatedPillar",
-    "params": ["z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -324,7 +324,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar.
     "jsonrpc": "2.0",
     "id": 1,
     "method": "embedded.pillar.getDepositedQsr",
-    "params": ["z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -353,7 +353,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
     "jsonrpc": "2.0",
     "id": 6,
     "method": "embedded.pillar.getUncollectedReward",
-    "params": ["z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -370,7 +370,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
     "jsonrpc": "2.0",
     "id": 6,
     "result": {
-        "address": "z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn",
+        "address": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
         "znnAmount": 100000000,
         "qsrAmount": 100000000
     }
@@ -394,7 +394,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
     "jsonrpc": "2.0",
     "id": 7,
     "method": "embedded.pillar.getFrontierRewardByPage",
-    "params": ["z1qqdtl63rkhap72nlaymtkemlchwv0ns9ksfjyn", 0, 5]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9", 0, 5]
 }
 ```
 
@@ -461,7 +461,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
     "jsonrpc": "2.0",
     "id": 30,
     "method": "embedded.pillar.getPillarEpochHistory",
-    "params": ["Pillar1", 0, 10]
+    "params": ["DeeZNNutz.com", 0, 10]
 }
 ```
 
@@ -485,7 +485,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
         "count": 50,
         "list": [
             {
-                "name": "Pillar1",
+                "name": "DeeZNNutz.com",
                 "epoch": 125,
                 "giveBlockRewardPercentage": 0,
                 "giveDelegateRewardPercentage": 100,
@@ -494,7 +494,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
                 "weight": 1500000000000
             },
             {
-                "name": "Pillar1",
+                "name": "DeeZNNutz.com",
                 "epoch": 124,
                 "giveBlockRewardPercentage": 0,
                 "giveDelegateRewardPercentage": 100,
@@ -540,7 +540,7 @@ One parameter of type `string` that represents the `ownerAddress` of the Pillar
         "count": 30,
         "list": [
             {
-                "name": "Pillar1",
+                "name": "DeeZNNutz.com",
                 "epoch": 125,
                 "giveBlockRewardPercentage": 0,
                 "giveDelegateRewardPercentage": 100,

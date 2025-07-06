@@ -45,16 +45,16 @@ Liquidity information object containing:
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
-        "administrator": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
+        "administrator": "z1qr9vtwsfr2n0nsxl2nfh6l5esqjh2wfj85cfq9",
         "isHalted": false,
-        "znnReward": 187200000000,
-        "qsrReward": 500000000000,
+        "znnReward": "0",
+        "qsrReward": "0",
         "tokenTuples": [
             {
-                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
-                "znnPercentage": 50,
-                "qsrPercentage": 50,
-                "minAmount": 1000000000
+                "tokenStandard": "zts17d6yr02kh0r9qr566p7tg6",
+                "znnPercentage": 10000,
+                "qsrPercentage": 10000,
+                "minAmount": "1"
             }
         ]
     }
@@ -92,14 +92,39 @@ Security information object containing:
     "id": 2,
     "result": {
         "guardians": [
-            "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
-            "z1qz3f6svf805tewktk5yf9tn8cdhe2236wdnugk"
+            "z1qphnq6jfaf82kmpyuuc88983ar66dmh7e59f67",
+            "z1qppk2p26xwwzu5w4zyzwknrx28whvjgy9ukc6h",
+            "z1qprccs7kjvx9q78m5v5ghwwfvxr6py8rtwcfrd",
+            "z1qpxswrfnlll355wrx868xh58j7e2gu2n2u5czv",
+            "z1qqcz0rmkz7f5442hjjr0thh2v6txu4875eyrkd",
+            "z1qqeyp02thdets4k245fnnjpk764ls65gwsy0cg",
+            "z1qr6k9c0z73c2zx22grhcw702slyz0gelt2uwvd",
+            "z1qr7urykpjth3w9lcl66atgvu5fc0ywawzha220",
+            "z1qrawthjzd95hcz73r3e5wd0xxzjmrt4vfqla0z",
+            "z1qrgh8w9q3xj5a2t2atnt3reqhh0akm4qae8ezk",
+            "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+            "z1qzjnnpmnqp6uqz2m9uet8l5e42ewwaty2mqcpy",
+            "z1qzup2zm6c9g68t085zjn5ycvdnr0u4pt0k4c80",
+            "z1qzymmtmfr3gxz3fr80cq94rgaefzkvst4e90lz"
         ],
         "guardiansVotes": [
-            "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt"
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f",
+            "z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f"
         ],
-        "administratorDelay": 172800,
-        "softDelay": 86400
+        "administratorDelay": 17280,
+        "softDelay": 8640
     }
 }
 ```
@@ -160,7 +185,7 @@ Array of time challenge objects containing:
     "jsonrpc": "2.0",
     "id": 3,
     "method": "embedded.liquidity.getLiquidityStakeEntriesByAddress",
-    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt", 0, 10]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9", 0, 10]
 }
 ```
 
@@ -184,21 +209,10 @@ Array of time challenge objects containing:
     "jsonrpc": "2.0",
     "id": 3,
     "result": {
-        "totalAmount": 100000000000,
-        "totalWeightedAmount": 150000000000,
-        "count": 1,
-        "list": [
-            {
-                "amount": 100000000000,
-                "tokenStandard": "zts1qsrxxxxxxxxxxxxxmrhjll",
-                "weightedAmount": 150000000000,
-                "startTime": 1640000000,
-                "revokeTime": 0,
-                "expirationTime": 1671536000,
-                "stakeAddress": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
-                "id": "b24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"
-            }
-        ]
+        "totalAmount": "0",
+        "totalWeightedAmount": "0",
+        "count": 0,
+        "list": []
     }
 }
 ```
@@ -216,7 +230,7 @@ One parameter of type `string` that represents the address.
     "jsonrpc": "2.0",
     "id": 4,
     "method": "embedded.liquidity.getUncollectedReward",
-    "params": ["z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt"]
+    "params": ["z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"]
 }
 ```
 
@@ -232,9 +246,9 @@ Reward deposit object containing:
     "jsonrpc": "2.0",
     "id": 4,
     "result": {
-        "address": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
-        "znnAmount": 10000000000,
-        "qsrAmount": 50000000000
+        "address": "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9",
+        "znnAmount": "0",
+        "qsrAmount": "0"
     }
 }
 ```
