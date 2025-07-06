@@ -78,24 +78,42 @@ Testing in progress. Core API documentation completed. Embedded contract APIs te
 
 ## Current Testing Progress (Embedded Contracts)
 
-**Currently testing**: Token and Pillar APIs
+**Completed**: Token and Pillar APIs
 
-**Token API findings**:
-- `embedded.token.getAll` - ✅ Working (274 tokens found)
-- `embedded.token.getByZts` - ✅ Working with ZNN token
+### 5. `/docs/developer/rpc-api/embedded/token.md`
+- **Methods tested**: 3
+- **Status**: All successful
+- **Changes**:
+  - Updated `getByOwner` parameter to use working address
+  - Verified real data: 274 tokens exist on network
+  - All 3 methods tested and working
 
-**Pillar API findings**:
-- `embedded.pillar.getAll` - ✅ Working (96 pillars found)  
-- `embedded.pillar.getByName` - ✅ Working with real pillar "DeeZNNutz.com"
-- `embedded.pillar.getQsrRegistrationCost` - ✅ Working
+### 6. `/docs/developer/rpc-api/embedded/pillar.md`  
+- **Methods tested**: 9
+- **Status**: All successful
+- **Changes**:
+  - Updated QSR registration cost to real value (32000000000000)
+  - Replace example pillar "VPS_1" with real pillar "DeeZNNutz.com"
+  - Replace non-existent addresses with working fallback address
+  - Verified: 96 active pillars on network
+
+**Additional testing completed**:
+- **Plasma API**: 2/3 methods working (getRequiredPoWForAccountBlock has different signature)
+- **Accelerator API**: Tested successfully (185 projects found)
 
 ## Overall Progress
 
 - Total files to test: 16
-- Files completed: 4 (index.md, stats.md, dual-ledger.md, subscribe.md)
-- Files remaining: 12
-- Methods successfully updated: 25+
-- Methods with errors: 1 (stats.runtimeInfo - not implemented)
+- Files completed: 6 (index.md, stats.md, dual-ledger.md, subscribe.md, token.md, pillar.md)
+- Files remaining: 10
+- Methods successfully updated: 35+
+- Methods with errors: 2 (stats.runtimeInfo, plasma.getRequiredPoWForAccountBlock)
+
+## Network Statistics Discovered
+- **Tokens**: 274 ZTS tokens exist
+- **Pillars**: 96 active pillars  
+- **Accelerator Projects**: 185 projects
+- **Fallback Address**: z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9 owns pillar "DeeZNNutz.com" and 3 custom tokens
 
 ---
 
