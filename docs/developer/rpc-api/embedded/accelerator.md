@@ -55,25 +55,25 @@ title: Accelerator
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
-        "count": 1,
+        "count": 185,
         "list": [
             {
-                "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
-                "owner": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
-                "name": "Example Project",
-                "description": "This is an example accelerator project",
-                "url": "https://example.com",
-                "znnFundsNeeded": 10000000000,
-                "qsrFundsNeeded": 100000000000,
-                "creationTimestamp": 1640000000,
-                "lastUpdateTimestamp": 1640100000,
-                "status": 0,
+                "id": "50ef67972bf4d3c33a5a8964d864be7fae198145aa92b4a6145697b1159d277a",
+                "owner": "z1qrjvurstsasg45m7meuzdnngj3utrlczk2drru",
+                "name": "HYPERQUBE_Z LAUNCH GENESIS",
+                "description": "Download the genesis file and run the hyperqube_z node.",
+                "url": "https://forum.hypercore.one/t/how-to-deploy-a-hqz-pillar/586",
+                "znnFundsNeeded": "1000000000",
+                "qsrFundsNeeded": "10000000000",
+                "creationTimestamp": 1739467650,
+                "lastUpdateTimestamp": 1739467650,
+                "status": 3,
                 "phaseIds": [],
                 "votes": {
-                    "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
-                    "total": 10,
+                    "id": "50ef67972bf4d3c33a5a8964d864be7fae198145aa92b4a6145697b1159d277a",
+                    "total": 8,
                     "yes": 8,
-                    "no": 2
+                    "no": 0
                 },
                 "phases": []
             }
@@ -95,7 +95,7 @@ One parameter of type `string` that represents the project hash.
     "jsonrpc": "2.0",
     "id": 2,
     "method": "embedded.accelerator.getProjectById",
-    "params": ["c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5"]
+    "params": ["50ef67972bf4d3c33a5a8964d864be7fae198145aa92b4a6145697b1159d277a"]
 }
 ```
 
@@ -108,22 +108,22 @@ Same project object structure as in `getAll` response.
     "jsonrpc": "2.0",
     "id": 2,
     "result": {
-        "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
-        "owner": "z1qph8dkja68pg3g6j4spwk9re0kjdkul0amwqnt",
-        "name": "Example Project",
-        "description": "This is an example accelerator project",
-        "url": "https://example.com",
-        "znnFundsNeeded": 10000000000,
-        "qsrFundsNeeded": 100000000000,
-        "creationTimestamp": 1640000000,
-        "lastUpdateTimestamp": 1640100000,
-        "status": 0,
+        "id": "50ef67972bf4d3c33a5a8964d864be7fae198145aa92b4a6145697b1159d277a",
+        "owner": "z1qrjvurstsasg45m7meuzdnngj3utrlczk2drru",
+        "name": "HYPERQUBE_Z LAUNCH GENESIS",
+        "description": "Download the genesis file and run the hyperqube_z node.",
+        "url": "https://forum.hypercore.one/t/how-to-deploy-a-hqz-pillar/586",
+        "znnFundsNeeded": "1000000000",
+        "qsrFundsNeeded": "10000000000",
+        "creationTimestamp": 1739467650,
+        "lastUpdateTimestamp": 1739467650,
+        "status": 3,
         "phaseIds": [],
         "votes": {
-            "id": "c24a5a6166c8948aba3e8a573e7173faf3d88e48c9798b1b67b7e61ae8552ed5",
-            "total": 10,
+            "id": "50ef67972bf4d3c33a5a8964d864be7fae198145aa92b4a6145697b1159d277a",
+            "total": 8,
             "yes": 8,
-            "no": 2
+            "no": 0
         },
         "phases": []
     }
