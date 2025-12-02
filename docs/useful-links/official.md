@@ -25,7 +25,8 @@ title: Official
 ## Explorers
 
 - https://zenonhub.io/explorer
-- https://explorer.zenon.network/ 
+- https://explorer.zenon.network
+- https://zenon.tools
 
 ## Mainnet Bridge Contracts on ETH
 
@@ -63,11 +64,11 @@ title: Official
 
 - [Discord](https://discord.gg/zenonnetwork)
 - [Telegram](https://t.me/zenonnetwork)
+- [Matrix](https://matrix.zenon.chat)
 - [Bitcointalk thread](https://bitcointalk.org/index.php?topic=5279643.msg55303681#msg55303681)
 - [Development Forum](https://forum.hypercore.one/)
 - [Community Forum](http://forum.zenon.org/)
 - [Medium](https://medium.com/@zenon.network)
-- [Matrix](https://matrix.zenon.chat)
 - [Zenon.chat](https://zenon.chat)
 
 ## Exchanges
