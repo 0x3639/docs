@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Generates docs/reference/packages/<pkg>.md from the pinned go-zenon
+# checkout using gomarkdoc. Only packages listed in PACKAGES are
+# generated (expand as godoc layers land in go-zenon).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+grep -qE '^ref=[0-9a-f]{40}$' PINNED_GO_ZENON || { echo "FATAL: malformed PINNED_GO_ZENON" >&2; exit 2; }
+eval "$(sed 's/^/PIN_/' PINNED_GO_ZENON)"
+GOMARKDOC_VERSION=v1.1.0
+PACKAGES=(rpc/api rpc/api/embedded rpc/api/subscribe)
+
+GOBIN="$PWD/.build/bin" go install "github.com/princjef/gomarkdoc/cmd/gomarkdoc@${GOMARKDOC_VERSION}"
+OUT="$PWD/docs/reference/packages"
+rm -rf "$OUT" && mkdir -p "$OUT"
+
+pos=1
+for pkg in "${PACKAGES[@]}"; do
+	slug="${pkg//\//-}"
+	(cd .build/go-zenon && GOWORK=off "../bin/gomarkdoc" \
+		--output "$OUT/$slug.md" \
+		--repository.url "https://github.com/0x3639/go-zenon" \
+		--repository.default-branch "$PIN_ref" \
+		--repository.path "/" \
+		"./$pkg")
+	tmp="$(mktemp)"
+	cat > "$tmp" <<EOF
+---
+title: "${pkg}"
+slug: "/reference/packages/${slug}"
+sidebar_label: "${pkg}"
+sidebar_position: ${pos}
+format: md
+---
+
+EOF
+	cat "$OUT/$slug.md" >> "$tmp" && mv "$tmp" "$OUT/$slug.md"
+	pos=$((pos+1))
+done
+echo "gen-godoc: generated ${#PACKAGES[@]} package pages at $PIN_ref"
