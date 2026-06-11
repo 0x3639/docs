@@ -35,7 +35,7 @@ for (const f of readdirSync(specDir).filter(f => f.endsWith('.yaml')).sort()) {
   if (frag.methods) doc.methods.push(...frag.methods);
   addSchemas(frag.schemas, f);
 }
-for (const f of readdirSync(join(specDir, 'components')).filter(f => f.endsWith('.yaml'))) {
+for (const f of readdirSync(join(specDir, 'components')).filter(f => f.endsWith('.yaml')).sort()) {
   addSchemas(parse(readFileSync(join(specDir, 'components', f), 'utf8')).schemas, `components/${f}`);
 }
 
