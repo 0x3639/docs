@@ -3,6 +3,9 @@
 # checkout using gomarkdoc. Only packages listed in PACKAGES are
 # generated (expand as godoc layers land in go-zenon).
 set -euo pipefail
+# A go.work above this checkout (dev machines) would otherwise capture
+# .build/go-zenon and break module resolution; CI has none either way.
+export GOWORK=off
 cd "$(dirname "$0")/.."
 grep -qE '^ref=[0-9a-f]{40}$' PINNED_GO_ZENON || { echo "FATAL: malformed PINNED_GO_ZENON" >&2; exit 2; }
 eval "$(sed 's/^/PIN_/' PINNED_GO_ZENON)"
