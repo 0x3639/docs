@@ -21,3 +21,7 @@ yarn-error.log*
 
 # Backup files
 docs/developer/rpc-api-backup.md
+
+# go-zenon checkout + generated reference (rebuilt by npm run gen)
+/.build
+/docs/reference/packages
