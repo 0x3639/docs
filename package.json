@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
+    "gen": "./scripts/fetch-go-zenon.sh && ./scripts/gen-godoc.sh && node scripts/assemble-openrpc.mjs",
     "start": "docusaurus start",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
@@ -25,7 +26,9 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.9.2",
-    "@docusaurus/types": "3.9.2"
+    "@docusaurus/types": "3.9.2",
+    "@open-rpc/schema-utils-js": "2.2.1",
+    "yaml": "2.9.0"
   },
   "browserslist": {
     "production": [

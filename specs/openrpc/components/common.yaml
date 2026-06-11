@@ -290,7 +290,9 @@ schemas:
           $ref: "#/components/schemas/AccountBlock"
         description: >-
           Blocks generated while executing this block (batch information);
-          empty for user blocks.
+          empty for user blocks. Nested descendants are bare account blocks
+          without the RPC-only extras (token, confirmationDetail,
+          pairedAccountBlock).
       data:
         $ref: "#/components/schemas/Base64Bytes"
         description: Block payload (e.g. ABI-encoded embedded-contract call), base64 encoded.

@@ -1,5 +1,5 @@
 {
   "label": "Reference",
   "position": 12,
-  "link": {"type": "generated-index", "description": "Generated reference material for go-zenon."}
+  "link": {"type": "doc", "id": "reference/index"}
 }
