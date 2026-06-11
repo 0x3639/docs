@@ -1,0 +1,465 @@
+# Shared OpenRPC schema components for the Zenon JSON-RPC API.
+#
+# Source of truth: struct json tags and godoc comments in the pinned
+# go-zenon source (.build/go-zenon), primarily:
+#   - rpc/api/ledger_types.go (AccountBlock, Momentum, AccountInfo, Token,
+#     BalanceInfo, AccountBlockList, MomentumList, DetailedMomentum[List],
+#     AccountBlockConfirmationDetail, MomentumHeader)
+#   - chain/nom/account_block.go and chain/nom/momentum.go (wire fields)
+#   - common/types (Address, Hash, HashHeight, AccountHeader,
+#     ZenonTokenStandard)
+#   - rpc/api/utils.go (RpcMaxPageSize / RpcMaxCountSize = 1024, GetRange)
+#
+# These fragments are merged by the spec assembler (task B8); $refs use the
+# final merged document layout "#/components/schemas/<Name>".
+schemas:
+  Address:
+    type: string
+    pattern: "^z1[023456789acdefghjklmnpqrstuvwxyz]{37}$"
+    description: >-
+      Zenon address in Bech32 form with human-readable part "z1".
+      Embedded-contract addresses are fixed system addresses (for example
+      the pillar contract z1qxemdeddedxpyllarxxxxxxxxxxxxxxxsy3fmg).
+    examples:
+      - "z1qxemdeddedxpyllarxxxxxxxxxxxxxxxsy3fmg"
+
+  Hash:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+    description: 32-byte SHA3-256 hash, hex encoded (64 lowercase hex characters).
+    examples:
+      - "bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92"
+
+  HashHeight:
+    type: object
+    description: >-
+      Reference to a chain entry by hash and height. Used, among others, as
+      an account block's momentumAcknowledged field, which anchors the block
+      to a momentum the account had observed when the block was created.
+    properties:
+      hash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the referenced entry.
+      height:
+        type: integer
+        minimum: 0
+        description: Height of the referenced entry.
+
+  TokenStandard:
+    type: string
+    pattern: "^zts1[023456789acdefghjklmnpqrstuvwxyz]{20}$"
+    description: >-
+      Zenon Token Standard (ZTS) identifier in Bech32 form with
+      human-readable part "zts". ZNN is zts1znnxxxxxxxxxxxxx9z4ulx, QSR is
+      zts1qsrxxxxxxxxxxxxxmrhjll; the zero token standard
+      zts1qqqqqqqqqqqqqqqqtq587y marks blocks that move no tokens.
+    examples:
+      - "zts1znnxxxxxxxxxxxxx9z4ulx"
+
+  Amount:
+    type: string
+    pattern: "^[0-9]+$"
+    description: >-
+      Arbitrary-precision unsigned integer amount, serialized as a base-10
+      JSON string to avoid precision loss. Amounts are expressed in raw base
+      units of the token (no decimal scaling; 10^8 base units per ZNN or
+      QSR).
+    examples:
+      - "1247750000"
+
+  Base64Bytes:
+    type: string
+    description: Raw byte array, base64 encoded; empty string when the field is empty.
+
+  Nonce:
+    type: string
+    pattern: "^[0-9a-f]{16}$"
+    description: 8-byte proof-of-work nonce, hex encoded; all zeros when no PoW was computed.
+
+  PageIndex:
+    type: integer
+    minimum: 0
+    description: 0-based page number.
+
+  PageSize:
+    type: integer
+    minimum: 0
+    maximum: 1024
+    description: >-
+      Number of entries per page. Must be at most 1024 (RpcMaxPageSize) or
+      the call fails with ErrPageSizeParamTooBig; some methods enforce
+      stricter limits, documented per method.
+
+  PageParams:
+    type: object
+    description: >-
+      Documentation grouping of the 0-based pagination parameter pair used
+      by paginated methods. The JSON-RPC API passes these as positional
+      parameters, not as an object.
+    properties:
+      pageIndex:
+        $ref: "#/components/schemas/PageIndex"
+      pageSize:
+        $ref: "#/components/schemas/PageSize"
+
+  AccountHeader:
+    type: object
+    description: >-
+      Compact reference to one account block inside a momentum's content:
+      the block's account address, hash and account-chain height.
+    properties:
+      address:
+        $ref: "#/components/schemas/Address"
+        description: Address whose account chain contains the referenced block.
+      hash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the referenced account block.
+      height:
+        type: integer
+        minimum: 1
+        description: Account-chain height of the referenced account block.
+
+  MomentumHeader:
+    type: object
+    description: >-
+      Compact reference to a momentum: its hash, its momentum-chain height
+      and its timestamp in Unix seconds.
+    properties:
+      hash:
+        $ref: "#/components/schemas/Hash"
+      height:
+        type: integer
+        minimum: 1
+      timestamp:
+        type: integer
+        description: Momentum timestamp in Unix seconds.
+
+  AccountBlockConfirmationDetail:
+    type: object
+    description: Describes the momentum that confirmed an account block.
+    properties:
+      numConfirmations:
+        type: integer
+        minimum: 1
+        description: >-
+          Number of momentums from the confirming momentum to the frontier,
+          inclusive; 1 means the block was confirmed by the current frontier
+          momentum.
+      momentumHeight:
+        type: integer
+        minimum: 1
+        description: Height of the momentum that confirmed the block.
+      momentumHash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the momentum that confirmed the block.
+      momentumTimestamp:
+        type: integer
+        description: Timestamp of the confirming momentum, in Unix seconds.
+
+  TokenInfo:
+    type: object
+    description: >-
+      Description of an on-chain token (ZTS). Supplies are raw base units
+      serialized as base-10 strings.
+    properties:
+      name:
+        type: string
+        description: Token name.
+      symbol:
+        type: string
+        description: Token symbol.
+      domain:
+        type: string
+        description: Domain associated with the token.
+      totalSupply:
+        $ref: "#/components/schemas/Amount"
+        description: Circulating supply in raw base units, as a base-10 string.
+      decimals:
+        type: integer
+        minimum: 0
+        maximum: 255
+        description: Number of decimal places used to display raw base-unit amounts.
+      owner:
+        $ref: "#/components/schemas/Address"
+        description: Address allowed to mint and to change ownership.
+      tokenStandard:
+        $ref: "#/components/schemas/TokenStandard"
+        description: The token's ZTS identifier.
+      maxSupply:
+        $ref: "#/components/schemas/Amount"
+        description: Maximum mintable supply in raw base units, as a base-10 string.
+      isBurnable:
+        type: boolean
+      isMintable:
+        type: boolean
+      isUtility:
+        type: boolean
+
+  BalanceInfo:
+    type: object
+    description: >-
+      One entry of AccountInfo.balanceInfoMap: a token description and the
+      account's balance in that token.
+    properties:
+      token:
+        $ref: "#/components/schemas/TokenInfo"
+        description: Description of the held token.
+      balance:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Balance in raw base units of the token (no decimal scaling),
+          serialized as a base-10 JSON string.
+
+  AccountInfo:
+    type: object
+    description: Summary of an account as returned by ledger.getAccountInfoByAddress.
+    properties:
+      address:
+        $ref: "#/components/schemas/Address"
+        description: The queried account address.
+      accountHeight:
+        type: integer
+        minimum: 0
+        description: >-
+          Height of the account chain's frontier block, equal to the total
+          number of blocks in the chain; 0 for an account with no blocks.
+      balanceInfoMap:
+        type: object
+        description: >-
+          Map from token standard (ZTS string) to token info and balance.
+          Tokens for which no token info exists on chain are omitted.
+        additionalProperties:
+          $ref: "#/components/schemas/BalanceInfo"
+
+  AccountBlock:
+    type: object
+    description: >-
+      Wire form of a ledger account block: the core ledger fields enriched
+      with data prefetched by the ledger API (token info, confirmation
+      detail, paired block). big.Int amounts are serialized as base-10 JSON
+      strings.
+    properties:
+      version:
+        type: integer
+        description: Block format version.
+      chainIdentifier:
+        type: integer
+        description: Network (chain) identifier the block was created for.
+      blockType:
+        type: integer
+        description: >-
+          Block type: 1 genesis receive, 2 user send, 3 user receive,
+          4 contract send, 5 contract receive.
+      hash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the block.
+      previousHash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the previous block in the same account chain.
+      height:
+        type: integer
+        minimum: 1
+        description: Height of the block within its account chain; the first block has height 1.
+      momentumAcknowledged:
+        $ref: "#/components/schemas/HashHeight"
+        description: Momentum the account had observed when the block was created.
+      address:
+        $ref: "#/components/schemas/Address"
+        description: Address of the account chain this block belongs to.
+      toAddress:
+        $ref: "#/components/schemas/Address"
+        description: Destination address (send information).
+      amount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Transferred amount in raw base units of tokenStandard, serialized
+          as a base-10 JSON string (send information).
+      tokenStandard:
+        $ref: "#/components/schemas/TokenStandard"
+        description: >-
+          ZTS of the transferred token; the zero token standard when the
+          block moves no tokens (send information).
+      fromBlockHash:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          Hash of the send block being received; all zeros for send blocks
+          (receive information).
+      descendantBlocks:
+        type: array
+        items:
+          $ref: "#/components/schemas/AccountBlock"
+        description: >-
+          Blocks generated while executing this block (batch information);
+          empty for user blocks.
+      data:
+        $ref: "#/components/schemas/Base64Bytes"
+        description: Block payload (e.g. ABI-encoded embedded-contract call), base64 encoded.
+      fusedPlasma:
+        type: integer
+        description: Plasma committed from fused QSR.
+      difficulty:
+        type: integer
+        description: Proof-of-work difficulty; 0 when no PoW was used.
+      nonce:
+        $ref: "#/components/schemas/Nonce"
+        description: Proof-of-work nonce, hex encoded.
+      basePlasma:
+        type: integer
+        description: Smallest value of usedPlasma required for the block; not included in the hash.
+      usedPlasma:
+        type: integer
+        description: "Total plasma consumed: fusedPlasma + PoW plasma; not included in the hash."
+      changesHash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the state changes produced by the block; not included in the hash.
+      publicKey:
+        oneOf:
+          - $ref: "#/components/schemas/Base64Bytes"
+          - type: "null"
+        description: >-
+          Ed25519 public key of the block signer, base64 encoded; null for
+          contract-generated blocks. Not included in the hash.
+      signature:
+        oneOf:
+          - $ref: "#/components/schemas/Base64Bytes"
+          - type: "null"
+        description: >-
+          Ed25519 signature of the block hash, base64 encoded; null for
+          contract-generated blocks. Not included in the hash.
+      token:
+        oneOf:
+          - $ref: "#/components/schemas/TokenInfo"
+          - type: "null"
+        description: >-
+          Description of the token referenced by tokenStandard; null when
+          the block moves no tokens.
+      confirmationDetail:
+        oneOf:
+          - $ref: "#/components/schemas/AccountBlockConfirmationDetail"
+          - type: "null"
+        description: Null while the block is not yet confirmed by a momentum.
+      pairedAccountBlock:
+        oneOf:
+          - $ref: "#/components/schemas/AccountBlock"
+          - type: "null"
+        description: >-
+          Counterpart of this block: for a send block, the receive block
+          that received it (null while unreceived); for a receive block, the
+          originating send block. For a genesis-receive block, which has no
+          real send counterpart, a synthetic empty contract-send block is
+          fabricated, with confirmation detail anchored at the genesis
+          momentum.
+
+  AccountBlockList:
+    type: object
+    description: Paginated list of account blocks.
+    properties:
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/AccountBlock"
+      count:
+        type: integer
+        description: >-
+          Total number of blocks available to the query that produced this
+          list, not the length of list; see each ledger method for its exact
+          meaning.
+      more:
+        type: boolean
+        description: >-
+          Whether additional blocks may exist beyond the window the
+          producing method inspected; only
+          ledger.getUnreceivedBlocksByAddress ever sets it to true.
+
+  Momentum:
+    type: object
+    description: >-
+      Wire form of a ledger momentum: the core ledger fields extended with
+      the producer address, which is derived from the momentum's producer
+      public key so clients do not have to recover it themselves.
+    properties:
+      version:
+        type: integer
+        description: Momentum format version.
+      chainIdentifier:
+        type: integer
+        description: Network (chain) identifier.
+      hash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the momentum.
+      previousHash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the previous momentum.
+      height:
+        type: integer
+        minimum: 1
+        description: Height in the momentum chain; the genesis momentum has height 1.
+      timestamp:
+        type: integer
+        description: Momentum timestamp in Unix seconds.
+      data:
+        $ref: "#/components/schemas/Base64Bytes"
+        description: Momentum payload, base64 encoded; empty in practice.
+      content:
+        type: array
+        items:
+          $ref: "#/components/schemas/AccountHeader"
+        description: References to the account blocks confirmed by this momentum.
+      changesHash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the state changes produced by the momentum.
+      publicKey:
+        $ref: "#/components/schemas/Base64Bytes"
+        description: >-
+          Ed25519 public key of the producing pillar, base64 encoded; not
+          included in the hash.
+      signature:
+        $ref: "#/components/schemas/Base64Bytes"
+        description: >-
+          Ed25519 signature by the producing pillar, base64 encoded; not
+          included in the hash.
+      producer:
+        $ref: "#/components/schemas/Address"
+        description: Pillar producer address, derived from publicKey.
+
+  MomentumList:
+    type: object
+    description: Paginated list of momentums.
+    properties:
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/Momentum"
+      count:
+        type: integer
+        description: >-
+          Frontier momentum height at the time of the query (the total
+          number of momentums in the chain), not the length of list.
+
+  DetailedMomentum:
+    type: object
+    description: >-
+      A momentum paired with the full account blocks it confirms, as
+      returned by ledger.getDetailedMomentumsByHeight.
+    properties:
+      blocks:
+        type: array
+        items:
+          $ref: "#/components/schemas/AccountBlock"
+        description: Full account blocks confirmed by the momentum.
+      momentum:
+        $ref: "#/components/schemas/Momentum"
+
+  DetailedMomentumList:
+    type: object
+    description: >-
+      Paginated list of momentums paired with the account blocks they
+      confirm. count has the same meaning as in MomentumList.
+    properties:
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/DetailedMomentum"
+      count:
+        type: integer
+        description: Frontier momentum height at the time of the query.

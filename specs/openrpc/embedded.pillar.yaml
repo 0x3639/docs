@@ -1,0 +1,610 @@
+# OpenRPC fragments for the "embedded.pillar" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of PillarApi in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/embedded/pillar.go, shared.go) and
+# wire struct json tags in vm/embedded/definition (RewardDeposit,
+# PillarEpochHistory). The namespace reads the state of the pillar embedded
+# contract (registrations, delegations, deposits, rewards) as of the
+# frontier momentum. Voting weights and momentum-production statistics come
+# from a consensus cache that is refreshed asynchronously at most every five
+# minutes, so they may lag contract state slightly. Epochs are consecutive
+# 24-hour windows counted from the genesis timestamp, starting at epoch 0;
+# token amounts are expressed in the smallest unit (10^8 per ZNN or QSR)
+# with big.Int values rendered as base-10 JSON strings.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-11; no example values are
+# invented. List examples were requested with pageSize 2 to stay readable.
+schemas:
+  PillarStats:
+    type: object
+    description: >-
+      Counts the momentums a pillar has produced in the current epoch
+      against the number it was expected to produce, as reported by the
+      consensus cache.
+    properties:
+      producedMomentums:
+        type: integer
+        minimum: 0
+        description: Momentums produced by the pillar in the current epoch.
+      expectedMomentums:
+        type: integer
+        minimum: 0
+        description: Momentums the pillar was expected to produce in the current epoch.
+
+  PillarInfo:
+    type: object
+    description: >-
+      Describes one registered pillar as reported by embedded.pillar.getAll
+      and its derived methods. The name, the three addresses, the
+      reward-sharing percentages and revokeTimestamp come from contract
+      state at the frontier momentum. isRevocable and revokeCooldown are
+      computed from the registration time and the frontier momentum
+      timestamp: a pillar's lifetime cycles through an 83-day locked window
+      followed by a 7-day revocable window. rank, weight and currentStats
+      come from the consensus cache; while the cache is cold they remain at
+      their zero placeholders.
+    properties:
+      name:
+        type: string
+        description: The pillar's registered name.
+      rank:
+        type: integer
+        minimum: 0
+        description: >-
+          0-based position after sorting all active pillars by descending
+          weight (ties broken by ascending name); assigned globally before
+          any page window is cut.
+      type:
+        type: integer
+        description: "Pillar type: 1 for legacy pillars, 2 for regular ones."
+      ownerAddress:
+        $ref: "#/components/schemas/Address"
+        description: The pillar's owner (stake) address.
+      producerAddress:
+        $ref: "#/components/schemas/Address"
+        description: The address used to produce momentums.
+      withdrawAddress:
+        $ref: "#/components/schemas/Address"
+        description: The address that collects the pillar's rewards.
+      isRevocable:
+        type: boolean
+        description: Whether the pillar is currently in the 7-day revocable window.
+      revokeCooldown:
+        type: integer
+        minimum: 0
+        description: >-
+          Seconds until the revocability state flips: until revocation
+          opens while locked, until it closes while revocable.
+      revokeTimestamp:
+        type: integer
+        description: Unix seconds of revocation; 0 while the pillar is not revoked.
+      giveMomentumRewardPercentage:
+        type: integer
+        minimum: 0
+        maximum: 100
+        description: Percentage of momentum rewards shared with delegators.
+      giveDelegateRewardPercentage:
+        type: integer
+        minimum: 0
+        maximum: 100
+        description: Percentage of delegation rewards shared with delegators.
+      currentStats:
+        $ref: "#/components/schemas/PillarStats"
+        description: Momentum-production statistics for the current epoch, from the consensus cache.
+      weight:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          The pillar's voting weight in producer elections, from the
+          consensus cache, as a base-10 string.
+
+  PillarInfoList:
+    type: object
+    description: >-
+      One page of pillars as returned by embedded.pillar.getAll. count is
+      the total number of active pillars, not the number of entries in
+      list.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+        description: Total number of active pillars.
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/PillarInfo"
+
+  GetDelegatedPillarResponse:
+    type: object
+    description: >-
+      Describes an address's current delegation: the delegated pillar's
+      name, its status, and the delegating address's own ZNN balance at the
+      frontier momentum, which is what the delegation weighs.
+    properties:
+      name:
+        type: string
+        description: Name of the delegated pillar.
+      status:
+        type: integer
+        description: >-
+          1 (active) while the delegated pillar exists in contract state
+          with revoke time 0; 2 (inactive) when the pillar has been revoked
+          or its registration no longer exists.
+      weight:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          The delegating address's own ZNN balance at the frontier momentum
+          in smallest units, as a base-10 string.
+
+  RewardDeposit:
+    type: object
+    description: >-
+      ZNN and QSR rewards credited to an address by an embedded contract
+      but not yet collected.
+    properties:
+      address:
+        $ref: "#/components/schemas/Address"
+        description: The address the rewards are credited to.
+      znnAmount:
+        $ref: "#/components/schemas/Amount"
+        description: Uncollected ZNN in smallest units, as a base-10 string.
+      qsrAmount:
+        $ref: "#/components/schemas/Amount"
+        description: Uncollected QSR in smallest units, as a base-10 string.
+
+  RewardHistoryEntry:
+    type: object
+    description: >-
+      The reward an address earned from one embedded contract during one
+      epoch: the epoch number and the ZNN and QSR amounts credited for it,
+      in smallest units.
+    properties:
+      epoch:
+        type: integer
+        minimum: 0
+        description: Epoch number (24-hour window counted from the genesis timestamp, starting at 0).
+      znnAmount:
+        $ref: "#/components/schemas/Amount"
+        description: ZNN credited for the epoch, in smallest units.
+      qsrAmount:
+        $ref: "#/components/schemas/Amount"
+        description: QSR credited for the epoch, in smallest units.
+
+  RewardHistoryList:
+    type: object
+    description: >-
+      One page of per-epoch reward history. count is the total number of
+      epochs the contract has processed so far (last processed epoch + 1),
+      not the number of entries in list; list holds the requested page in
+      descending epoch order.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+        description: Total number of epochs the contract has processed so far (last processed epoch + 1).
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/RewardHistoryEntry"
+        description: The requested page, in descending epoch order.
+
+  PillarEpochHistory:
+    type: object
+    description: One pillar's recorded history for one epoch.
+    properties:
+      name:
+        type: string
+        description: The pillar's name.
+      epoch:
+        type: integer
+        minimum: 0
+        description: Epoch number the entry refers to.
+      giveBlockRewardPercentage:
+        type: integer
+        minimum: 0
+        maximum: 100
+        description: Percentage of momentum (block) rewards shared with delegators in that epoch.
+      giveDelegateRewardPercentage:
+        type: integer
+        minimum: 0
+        maximum: 100
+        description: Percentage of delegation rewards shared with delegators in that epoch.
+      producedBlockNum:
+        type: integer
+        description: Momentums the pillar produced in that epoch.
+      expectedBlockNum:
+        type: integer
+        description: Momentums the pillar was expected to produce in that epoch.
+      weight:
+        $ref: "#/components/schemas/Amount"
+        description: The pillar's voting weight in that epoch, as a base-10 string.
+
+  PillarEpochHistoryList:
+    type: object
+    description: >-
+      One page of per-epoch pillar history. count depends on the producing
+      method: embedded.pillar.getPillarEpochHistory sets it to the total
+      number of processed epochs (last processed epoch + 1), while
+      embedded.pillar.getPillarsHistoryByEpoch sets it to the number of
+      pillar entries recorded for the requested epoch.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/PillarEpochHistory"
+
+methods:
+  - name: embedded.pillar.getQsrRegistrationCost
+    summary: Returns the QSR deposit currently required to register a new pillar.
+    description: >-
+      Returns the QSR deposit currently required to register a new pillar.
+      It is computed on the fly, not read from a stored value: the base
+      amount (150,000 QSR) plus the per-pillar increase (10,000 QSR) for
+      each active non-legacy pillar registered at the frontier momentum.
+      The amount is a base-10 string in smallest units.
+    params: []
+    result:
+      name: qsrRegistrationCost
+      schema:
+        $ref: "#/components/schemas/Amount"
+      description: Required QSR deposit in smallest units, as a base-10 string.
+    examples:
+      - name: qsrRegistrationCost
+        params: []
+        result:
+          name: qsrRegistrationCost
+          value: "33000000000000"
+
+  - name: embedded.pillar.getAll
+    summary: Returns one page of the active pillars, sorted by descending weight.
+    description: >-
+      Returns one page of the active (non-revoked) pillars, of both legacy
+      and regular type, read from contract state at the frontier momentum
+      and enriched with weights and momentum statistics from the consensus
+      cache. The full list is sorted by descending weight (ties by
+      ascending name) and ranked before the page window is cut, so rank is
+      global, and count is the total number of active pillars. A pageSize
+      above 1024 is rejected with ErrPageSizeParamTooBig.
+    params:
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of pillars per page; must be at most 1024.
+    result:
+      name: pillarInfoList
+      schema:
+        $ref: "#/components/schemas/PillarInfoList"
+      description: >-
+        One page of active pillars sorted by descending weight (ties by
+        ascending name); count is the total number of active pillars.
+    examples:
+      - name: getAll
+        params:
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: pillarInfoList
+          value: {"count":97,"list":[{"name":"DeeZNNutz.com","rank":0,"type":2,"ownerAddress":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","producerAddress":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx","withdrawAddress":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","isRevocable":false,"revokeCooldown":261350,"revokeTimestamp":0,"giveMomentumRewardPercentage":69,"giveDelegateRewardPercentage":100,"currentStats":{"producedMomentums":10,"expectedMomentums":10},"weight":"32619519592239"},{"name":"SultanOfStaking","rank":1,"type":1,"ownerAddress":"z1qzlaadsmar8pm0rdfwkctvxc8n2g5gaadxvmqj","producerAddress":"z1qrjdhy65zds69a96xlhheu4sy689k34x4hpse0","withdrawAddress":"z1qqwttth8sj5fchuqyr0ctum63hax2rqfyswk8y","isRevocable":false,"revokeCooldown":3708280,"revokeTimestamp":0,"giveMomentumRewardPercentage":69,"giveDelegateRewardPercentage":99,"currentStats":{"producedMomentums":9,"expectedMomentums":9},"weight":"30846431018499"}]}
+
+  - name: embedded.pillar.getByName
+    summary: Returns the active pillar registered under the given name.
+    description: >-
+      Returns the active pillar registered under the given name, with the
+      same enrichment as embedded.pillar.getAll, or null without an error
+      when no such pillar exists. Like embedded.pillar.getByOwner it
+      considers at most the 1024 highest-weighted pillars.
+    params:
+      - name: name
+        required: true
+        schema:
+          type: string
+        description: The pillar name to look up.
+    result:
+      name: pillarInfo
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/PillarInfo"
+          - type: "null"
+      description: The pillar, or null when no active pillar with that name exists.
+    examples:
+      - name: getByName
+        params:
+          - name: name
+            value: "DeeZNNutz.com"
+        result:
+          name: pillarInfo
+          value: {"name":"DeeZNNutz.com","rank":0,"type":2,"ownerAddress":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","producerAddress":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx","withdrawAddress":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","isRevocable":false,"revokeCooldown":261330,"revokeTimestamp":0,"giveMomentumRewardPercentage":69,"giveDelegateRewardPercentage":100,"currentStats":{"producedMomentums":12,"expectedMomentums":12},"weight":"32619519592239"}
+
+  - name: embedded.pillar.getByOwner
+    summary: Returns the active pillars whose owner (stake) address matches.
+    description: >-
+      Returns the active pillars whose owner (stake) address is
+      stakeAddress, with the same enrichment and ordering as
+      embedded.pillar.getAll. It scans only the first getAll page of
+      maximum size, so at most the 1024 highest-weighted pillars are
+      considered. An empty list is returned when none match.
+    params:
+      - name: stakeAddress
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Owner (stake) address to filter by.
+    result:
+      name: pillarInfoArray
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/PillarInfo"
+      description: Matching pillars; empty when none match.
+    examples:
+      - name: getByOwner
+        params:
+          - name: stakeAddress
+            value: "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"
+        result:
+          name: pillarInfoArray
+          value: [{"name":"DeeZNNutz.com","rank":0,"type":2,"ownerAddress":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","producerAddress":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx","withdrawAddress":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","isRevocable":false,"revokeCooldown":261330,"revokeTimestamp":0,"giveMomentumRewardPercentage":69,"giveDelegateRewardPercentage":100,"currentStats":{"producedMomentums":12,"expectedMomentums":12},"weight":"32619519592239"}]
+
+  - name: embedded.pillar.getDelegatedPillar
+    summary: Returns the delegation of an address.
+    description: >-
+      Returns the delegation of addr read from contract state at the
+      frontier momentum, or null without an error when addr does not
+      delegate. The status is 1 (active) only when the delegated pillar
+      still exists with revoke time 0; a revoked or missing pillar record
+      yields 2 (inactive) while the delegation entry itself remains. The
+      weight is computed on the fly from addr's ZNN balance, not from
+      contract state.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose delegation to query.
+    result:
+      name: delegation
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/GetDelegatedPillarResponse"
+          - type: "null"
+      description: The delegation, or null when the address does not delegate.
+    examples:
+      - name: getDelegatedPillar
+        params:
+          - name: address
+            value: "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"
+        result:
+          name: delegation
+          value: {"name":"0x3639.com","status":1,"weight":"1471498622966"}
+
+  - name: embedded.pillar.getDepositedQsr
+    summary: Returns the QSR an address has deposited toward a pillar registration.
+    description: >-
+      Returns the QSR address has deposited in the pillar contract toward a
+      future pillar registration, read from contract state at the frontier
+      momentum. The amount is a base-10 string in smallest units; an
+      address with no deposit yields "0".
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose deposit to query.
+    result:
+      name: depositedQsr
+      schema:
+        $ref: "#/components/schemas/Amount"
+      description: Deposited QSR in smallest units, as a base-10 string; "0" when no deposit exists.
+    examples:
+      - name: getDepositedQsr
+        params:
+          - name: address
+            value: "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"
+        result:
+          name: depositedQsr
+          value: "0"
+
+  - name: embedded.pillar.getUncollectedReward
+    summary: Returns the pillar rewards credited to an address but not yet collected.
+    description: >-
+      Returns the ZNN and QSR pillar rewards credited to address but not
+      yet collected, read from contract state at the frontier momentum. An
+      address with nothing to collect yields a deposit with both amounts 0,
+      not an error.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose uncollected rewards to query.
+    result:
+      name: rewardDeposit
+      schema:
+        $ref: "#/components/schemas/RewardDeposit"
+      description: Uncollected ZNN and QSR amounts; both 0 when nothing is collectable.
+    examples:
+      - name: getUncollectedReward
+        params:
+          - name: address
+            value: "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"
+        result:
+          name: rewardDeposit
+          value: {"address":"z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","znnAmount":"35309000000","qsrAmount":"0"}
+
+  - name: embedded.pillar.getFrontierRewardByPage
+    summary: Pages over the per-epoch pillar reward history of an address, newest epoch first.
+    description: >-
+      Pages over the per-epoch pillar reward history of address, newest
+      epoch first; epochs without a recorded reward yield zero-amount
+      entries. Page 0 starts at the last epoch the contract has processed
+      and each entry steps one epoch back; the page is cut short at epoch 0
+      (when no epoch has been processed yet the list is empty). A pageSize
+      above 1024 is rejected with ErrPageSizeParamTooBig. In the result,
+      count is the total number of epochs the contract has processed so far
+      (last processed epoch + 1), not the number of entries in list.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose reward history to page over.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number, counting backwards from the last processed epoch.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of epochs per page; must be at most 1024.
+    result:
+      name: rewardHistoryList
+      schema:
+        $ref: "#/components/schemas/RewardHistoryList"
+      description: >-
+        Reward entries in descending epoch order; count is the total number
+        of processed epochs.
+    examples:
+      - name: getFrontierRewardByPage
+        params:
+          - name: address
+            value: "z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: rewardHistoryList
+          value: {"count":1660,"list":[{"epoch":1659,"znnAmount":"1247750000","qsrAmount":"0"},{"epoch":1658,"znnAmount":"1302000000","qsrAmount":"0"}]}
+
+  - name: embedded.pillar.getPillarEpochHistory
+    summary: Pages over the recorded epoch history of a named pillar, newest epoch first.
+    description: >-
+      Pages over the recorded epoch history of the named pillar (reward
+      percentages, produced and expected momentums, weight per epoch),
+      newest epoch first: page 0 starts at the last epoch the contract has
+      processed and each entry steps one epoch back, stopping at epoch 0.
+      Epochs with no record for the name yield synthesized entries with
+      zero percentages, counts and weight, so the method does not
+      distinguish a not-yet-registered pillar from an idle one. A pageSize
+      above 1024 is rejected with ErrPageSizeParamTooBig. In the result,
+      count is the total number of processed epochs (last processed epoch
+      + 1).
+    params:
+      - name: pillarName
+        required: true
+        schema:
+          type: string
+        description: The pillar name whose epoch history to page over.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number, counting backwards from the last processed epoch.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of epochs per page; must be at most 1024.
+    result:
+      name: pillarEpochHistoryList
+      schema:
+        $ref: "#/components/schemas/PillarEpochHistoryList"
+      description: >-
+        Epoch history entries in descending epoch order; count is the total
+        number of processed epochs (last processed epoch + 1).
+    examples:
+      - name: getPillarEpochHistory
+        params:
+          - name: pillarName
+            value: "DeeZNNutz.com"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: pillarEpochHistoryList
+          value: {"count":1660,"list":[{"name":"DeeZNNutz.com","epoch":1659,"giveBlockRewardPercentage":69,"giveDelegateRewardPercentage":100,"producedBlockNum":161,"expectedBlockNum":161,"weight":"32251824652368"},{"name":"DeeZNNutz.com","epoch":1658,"giveBlockRewardPercentage":69,"giveDelegateRewardPercentage":100,"producedBlockNum":168,"expectedBlockNum":168,"weight":"32052847010584"}]}
+
+  - name: embedded.pillar.getPillarsHistoryByEpoch
+    summary: Returns one page of the history entries recorded for all pillars in a given epoch.
+    description: >-
+      Returns one page of the history entries recorded for all pillars in
+      the given epoch, in storage (key) order. count is the total number of
+      entries for that epoch; an epoch without records yields an empty
+      list. A pageSize above 1024 is rejected with ErrPageSizeParamTooBig.
+    params:
+      - name: epoch
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+        description: Epoch number to query.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of entries per page; must be at most 1024.
+    result:
+      name: pillarEpochHistoryList
+      schema:
+        $ref: "#/components/schemas/PillarEpochHistoryList"
+      description: >-
+        Entries for the epoch in storage (key) order; count is the total
+        number of entries recorded for that epoch.
+    examples:
+      - name: getPillarsHistoryByEpoch
+        params:
+          - name: epoch
+            value: 155
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: pillarEpochHistoryList
+          value: {"count":83,"list":[{"name":"1ZNN1BTC","epoch":155,"giveBlockRewardPercentage":0,"giveDelegateRewardPercentage":0,"producedBlockNum":65,"expectedBlockNum":71,"weight":"1141249816594"},{"name":"222","epoch":155,"giveBlockRewardPercentage":0,"giveDelegateRewardPercentage":0,"producedBlockNum":66,"expectedBlockNum":66,"weight":"0"}]}
+
+  - name: embedded.pillar.checkNameAvailability
+    summary: Reports whether a name can still be used to register a pillar.
+    description: >-
+      Reports whether name can still be used to register a pillar. Unlike
+      embedded.pillar.getAll, the check runs against every pillar record in
+      contract state, including revoked ones, so a revoked pillar's name
+      stays unavailable.
+    params:
+      - name: name
+        required: true
+        schema:
+          type: string
+        description: The pillar name to check.
+    result:
+      name: available
+      schema:
+        type: boolean
+      description: True when the name is still available, false when it is taken (including by revoked pillars).
+    examples:
+      - name: checkNameAvailability
+        params:
+          - name: name
+            value: "DeeZNNutz.com"
+        result:
+          name: available
+          value: false

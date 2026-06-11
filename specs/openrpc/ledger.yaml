@@ -1,0 +1,549 @@
+# OpenRPC method fragments for the "ledger" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of LedgerApi in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/ledger.go, ledger_types.go,
+# utils.go). All read methods operate on the frontier (most recent) state of
+# the chain at the time of the call.
+#
+# NOTE: the reflection-based RPC server also exposes ledger.string (the
+# String() log/name tag of the LedgerApi object, returning the constant
+# "LedgerApi"). It is an internal artifact, not part of the API surface, and
+# is deliberately excluded from this spec.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-11; no example values are
+# invented. List examples were requested with small page sizes to stay
+# readable.
+methods:
+  - name: ledger.getFrontierAccountBlock
+    summary: Returns the most recent committed block of the given address's account chain.
+    description: >-
+      Returns the most recent committed block of the given address's account
+      chain, i.e. the block with the highest account-chain height. It
+      returns null if the account chain has no blocks.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose account chain to query.
+    result:
+      name: accountBlock
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/AccountBlock"
+          - type: "null"
+      description: The frontier account block, or null if the account chain has no blocks.
+    examples:
+      - name: frontierAccountBlock
+        params:
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+        result:
+          name: accountBlock
+          value: {"version":1,"chainIdentifier":1,"blockType":2,"hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","previousHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","height":1666,"momentumAcknowledged":{"hash":"d45c282adc48ad1a75920182cdc365b46bce7df23715d6232eb041d289bf516e","height":13474913},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"d135f5a9880251cdfa2c729b141cbceeb9ba271ecb62c7573bcbcd74de1dbbda","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"m5TV9ce+NISz0Ui4yt5GXsv89wINQa1Eq5qeLCrJVIKF6bCCx8b1ViTF1q4bvzFS2fEdV/nNOtvKSsmJxH3TDg==","token":null,"confirmationDetail":{"numConfirmations":2,"momentumHeight":13474918,"momentumHash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","momentumTimestamp":1781186060},"pairedAccountBlock":null}
+
+  - name: ledger.getAccountBlockByHash
+    summary: Returns the committed account block with the given hash.
+    description: >-
+      Returns the committed account block with the given hash, enriched with
+      token, confirmation and paired-block details. It returns null if no
+      block with that hash exists.
+    params:
+      - name: blockHash
+        required: true
+        schema:
+          $ref: "#/components/schemas/Hash"
+        description: Hash of the account block to look up.
+    result:
+      name: accountBlock
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/AccountBlock"
+          - type: "null"
+      description: The account block, or null if no block with that hash exists.
+    examples:
+      - name: accountBlockByHash
+        params:
+          - name: blockHash
+            value: "476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d"
+        result:
+          name: accountBlock
+          value: {"version":1,"chainIdentifier":1,"blockType":2,"hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","previousHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","height":1666,"momentumAcknowledged":{"hash":"d45c282adc48ad1a75920182cdc365b46bce7df23715d6232eb041d289bf516e","height":13474913},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"d135f5a9880251cdfa2c729b141cbceeb9ba271ecb62c7573bcbcd74de1dbbda","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"m5TV9ce+NISz0Ui4yt5GXsv89wINQa1Eq5qeLCrJVIKF6bCCx8b1ViTF1q4bvzFS2fEdV/nNOtvKSsmJxH3TDg==","token":null,"confirmationDetail":{"numConfirmations":2,"momentumHeight":13474918,"momentumHash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","momentumTimestamp":1781186060},"pairedAccountBlock":null}
+
+  - name: ledger.getAccountBlocksByHeight
+    summary: Returns committed blocks of an account chain starting at a given height, in ascending height order.
+    description: >-
+      Returns up to count committed blocks of the given address's account
+      chain, starting at the given account-chain height and walking towards
+      the frontier in ascending height order. Heights past the frontier are
+      skipped, so list may hold fewer than count entries.
+
+
+      height must be at least 1 (the first block of every account chain) or
+      ErrHeightParamIsZero is returned; count is a maximum and must not
+      exceed RpcMaxCountSize (1024) or ErrCountParamTooBig is returned. In
+      the result, count is the total number of blocks in the account chain
+      (the frontier height), not the page length; an account with no blocks
+      yields an empty list with count 0.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose account chain to query.
+      - name: height
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: Account-chain height to start from; must be at least 1.
+      - name: count
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1024
+        description: Maximum number of blocks to return; must not exceed 1024.
+    result:
+      name: accountBlockList
+      schema:
+        $ref: "#/components/schemas/AccountBlockList"
+      description: >-
+        Blocks in ascending height order; count is the total number of
+        blocks in the account chain.
+    examples:
+      - name: accountBlocksByHeight
+        params:
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+          - name: height
+            value: 1665
+          - name: count
+            value: 2
+        result:
+          name: accountBlockList
+          value: {"list":[{"version":1,"chainIdentifier":1,"blockType":2,"hash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","previousHash":"00ac289a35d9e302740d9e3601128284d8c805fa9b9af2e737a25e9fee4306fe","height":1665,"momentumAcknowledged":{"hash":"14f774973dcf53988e4e22815ae732a2690db7be06432afa8078e74858a5d25b","height":13474603},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"2100bdd51cc6b4fbdb686157e27677523595eaea1c098aa745a58c0bd1f1bfa1","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"9fR0FXciykjV5C5J8H2+/2Cmqqb6FhT+OBHm/+BTEbAoP7WL1eZcaRg//xUl1TGCfvsMjbAwc3nsK5LguQmHBQ==","token":null,"confirmationDetail":{"numConfirmations":313,"momentumHeight":13474607,"momentumHash":"4eb96ce80c8d4b9a195691c54a64d5bdbfc29b15decaae82645b67c6a5866a45","momentumTimestamp":1781182460},"pairedAccountBlock":{"version":1,"chainIdentifier":1,"blockType":5,"hash":"282074a3ff166f7cbf9c7a5653b4d20ab64776ce0bd60c468c02430b92d94547","previousHash":"179c24ea912314ce2622ebf83915e9580aea1ecf302c0bccecb937a0cca04e79","height":89369,"momentumAcknowledged":{"hash":"4eb96ce80c8d4b9a195691c54a64d5bdbfc29b15decaae82645b67c6a5866a45","height":13474607},"address":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","toAddress":"z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","descendantBlocks":[],"data":"AAAAAAAAAAE=","fusedPlasma":0,"difficulty":0,"nonce":"0000000000000000","basePlasma":0,"usedPlasma":0,"changesHash":"00e45d7a13d8035efa0c31be55e545f117c18d21a66ac7fddf8e1a9e5797692c","publicKey":null,"signature":null,"token":null,"confirmationDetail":{"numConfirmations":312,"momentumHeight":13474608,"momentumHash":"3d2f67b0610e5108328cabe6d228bf7e8ec50e112d279d6984afb465a39c2efe","momentumTimestamp":1781182470},"pairedAccountBlock":null}},{"version":1,"chainIdentifier":1,"blockType":2,"hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","previousHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","height":1666,"momentumAcknowledged":{"hash":"d45c282adc48ad1a75920182cdc365b46bce7df23715d6232eb041d289bf516e","height":13474913},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"d135f5a9880251cdfa2c729b141cbceeb9ba271ecb62c7573bcbcd74de1dbbda","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"m5TV9ce+NISz0Ui4yt5GXsv89wINQa1Eq5qeLCrJVIKF6bCCx8b1ViTF1q4bvzFS2fEdV/nNOtvKSsmJxH3TDg==","token":null,"confirmationDetail":{"numConfirmations":2,"momentumHeight":13474918,"momentumHash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","momentumTimestamp":1781186060},"pairedAccountBlock":null}],"count":1666,"more":false}
+
+  - name: ledger.getAccountBlocksByPage
+    summary: Returns one page of an account chain, paginating backwards from the frontier.
+    description: >-
+      Returns one page of the given address's account chain, paginating
+      backwards from the frontier: pageIndex 0 holds the pageSize most
+      recent blocks, pageIndex 1 the pageSize before those, and so on.
+      Within a page, blocks are ordered by descending height (newest
+      first).
+
+
+      pageIndex is 0-based; pageSize must be at most RpcMaxPageSize (1024)
+      or ErrPageSizeParamTooBig is returned. Pages that extend past the
+      start of the chain are truncated, and a page entirely before block 1
+      yields an empty list. In the result, count is the total number of
+      blocks in the account chain.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose account chain to query.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number, counting backwards from the frontier.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of blocks per page; must be at most 1024.
+    result:
+      name: accountBlockList
+      schema:
+        $ref: "#/components/schemas/AccountBlockList"
+      description: >-
+        Blocks in descending height order (newest first); count is the
+        total number of blocks in the account chain.
+    examples:
+      - name: accountBlocksByPage
+        params:
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 1
+        result:
+          name: accountBlockList
+          value: {"list":[{"version":1,"chainIdentifier":1,"blockType":2,"hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","previousHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","height":1666,"momentumAcknowledged":{"hash":"d45c282adc48ad1a75920182cdc365b46bce7df23715d6232eb041d289bf516e","height":13474913},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"d135f5a9880251cdfa2c729b141cbceeb9ba271ecb62c7573bcbcd74de1dbbda","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"m5TV9ce+NISz0Ui4yt5GXsv89wINQa1Eq5qeLCrJVIKF6bCCx8b1ViTF1q4bvzFS2fEdV/nNOtvKSsmJxH3TDg==","token":null,"confirmationDetail":{"numConfirmations":2,"momentumHeight":13474918,"momentumHash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","momentumTimestamp":1781186060},"pairedAccountBlock":null}],"count":1666,"more":false}
+
+  - name: ledger.getAccountInfoByAddress
+    summary: Returns a summary of an account, including its height and token balances.
+    description: >-
+      Returns a summary of the given account: its address, the height of
+      its account chain (0 if the account has no blocks) and a map from
+      token standard to balance. Balances are raw base units (serialized as
+      JSON strings); tokens for which no token info exists on chain are
+      omitted from the map.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address to summarize.
+    result:
+      name: accountInfo
+      schema:
+        $ref: "#/components/schemas/AccountInfo"
+      description: Account summary with balances per token standard.
+    examples:
+      - name: accountInfoByAddress
+        params:
+          - name: address
+            value: "z1qxemdeddedxpyllarxxxxxxxxxxxxxxxsy3fmg"
+        result:
+          name: accountInfo
+          value: {"address":"z1qxemdeddedxpyllarxxxxxxxxxxxxxxxsy3fmg","accountHeight":538226,"balanceInfoMap":{"zts1qsrxxxxxxxxxxxxxmrhjll":{"token":{"name":"QSR","symbol":"QSR","domain":"zenon.network","totalSupply":"3093453375208613","decimals":8,"owner":"z1qxemdeddedxt0kenxxxxxxxxxxxxxxxxh9amk0","tokenStandard":"zts1qsrxxxxxxxxxxxxxmrhjll","maxSupply":"9007199254740991","isBurnable":true,"isMintable":true,"isUtility":true},"balance":"65735400000"},"zts1znnxxxxxxxxxxxxx9z4ulx":{"token":{"name":"ZNN","symbol":"ZNN","domain":"zenon.network","totalSupply":"1349992596812993","decimals":8,"owner":"z1qxemdeddedxt0kenxxxxxxxxxxxxxxxxh9amk0","tokenStandard":"zts1znnxxxxxxxxxxxxx9z4ulx","maxSupply":"9007199254740991","isBurnable":true,"isMintable":true,"isUtility":true},"balance":"145500000000000"}}}
+
+  - name: ledger.getUnconfirmedBlocksByAddress
+    summary: Returns accepted account blocks of an address not yet committed in a momentum.
+    description: >-
+      Returns account blocks of the given address that the node has
+      accepted but that are not yet committed in a momentum.
+
+
+      pageIndex is 0-based; pageSize must be at most RpcMaxPageSize (1024)
+      or ErrPageSizeParamTooBig is returned. The page window is clamped to
+      the available blocks, so a page past the end yields an empty list. In
+      the result, count is the total number of unconfirmed blocks for the
+      address (not the page length) and more is always false.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose unconfirmed blocks to query.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of blocks per page; must be at most 1024.
+    result:
+      name: accountBlockList
+      schema:
+        $ref: "#/components/schemas/AccountBlockList"
+      description: >-
+        Unconfirmed blocks; count is the total number of unconfirmed blocks
+        for the address and more is always false.
+    examples:
+      - name: unconfirmedBlocksByAddress
+        params:
+          - name: address
+            value: "z1qxemdeddedxpyllarxxxxxxxxxxxxxxxsy3fmg"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: accountBlockList
+          value: {"list":[],"count":0,"more":false}
+
+  - name: ledger.getUnreceivedBlocksByAddress
+    summary: Returns committed send blocks addressed to an account that it has not yet received.
+    description: >-
+      Returns committed send blocks addressed to the given account for
+      which the account has not yet generated a receive block.
+
+
+      This method uses stricter limits than the other paginated calls:
+      pageSize must be at most 50 (ErrPageSizeParamTooBig) and pageIndex,
+      0-based, must be less than 10 (ErrPageIndexParamTooBig). Each call
+      scans at most 500 pending hashes; in the result, count is the number
+      of unreceived blocks found within that window and more is true when
+      the window was full, meaning additional unreceived blocks may exist
+      beyond it.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose unreceived blocks to query.
+      - name: pageIndex
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 9
+        description: 0-based page number; must be less than 10.
+      - name: pageSize
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 50
+        description: Number of blocks per page; must be at most 50.
+    result:
+      name: accountBlockList
+      schema:
+        $ref: "#/components/schemas/AccountBlockList"
+      description: >-
+        Unreceived blocks; count is the number of unreceived blocks found
+        within the 500-hash scan window and more is true when the window
+        was full.
+    examples:
+      - name: unreceivedBlocksByAddress
+        params:
+          - name: address
+            value: "z1qxemdeddedxpyllarxxxxxxxxxxxxxxxsy3fmg"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: accountBlockList
+          value: {"list":[],"count":0,"more":false}
+
+  - name: ledger.getFrontierMomentum
+    summary: Returns the momentum at the head of the momentum chain.
+    description: >-
+      Returns the momentum at the head of the momentum chain, i.e. the most
+      recently inserted momentum.
+    params: []
+    result:
+      name: momentum
+      schema:
+        $ref: "#/components/schemas/Momentum"
+      description: The frontier momentum.
+    examples:
+      - name: frontierMomentum
+        params: []
+        result:
+          name: momentum
+          value: {"version":1,"chainIdentifier":1,"hash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","previousHash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","height":13474918,"timestamp":1781186060,"data":"","content":[{"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","height":1666}],"changesHash":"40bd54b5ee832fbaa82f4b32ccd0d6cd215612515293c7f1878c2281bb3dc42d","publicKey":"i0MkFAj+f4FipCHu/L4Ee3g23pkRR7eoOPe1VRH2S4Y=","signature":"WkNtMLT6Jk9i5hvipZu0xmv2H5Bfcgymgz3N7Hqpx6eSVjRKNbBwBbXcLULTYw1tYofsHv1lboPfuPspOZ5pCw==","producer":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx"}
+
+  - name: ledger.getMomentumBeforeTime
+    summary: Returns the most recent momentum strictly before a Unix timestamp.
+    description: >-
+      Returns the most recent momentum whose timestamp is strictly before
+      the given Unix timestamp (seconds). It returns null when no such
+      momentum exists, i.e. when the genesis momentum's timestamp is at or
+      after the given time.
+    params:
+      - name: timestamp
+        required: true
+        schema:
+          type: integer
+        description: Unix timestamp in seconds.
+    result:
+      name: momentum
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/Momentum"
+          - type: "null"
+      description: >-
+        The most recent momentum strictly before the given time, or null
+        when no such momentum exists.
+    examples:
+      - name: momentumBeforeTime
+        params:
+          - name: timestamp
+            value: 1781186060
+        result:
+          name: momentum
+          value: {"version":1,"chainIdentifier":1,"hash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","previousHash":"5d6d682f0f0ea4a88a0d60fdc38ed8f8424ef1679da8eae7de98b070ea44bbb6","height":13474917,"timestamp":1781186030,"data":"","content":[],"changesHash":"a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a","publicKey":"dpJTNz+J+t+61CqNmqBCqN3jHhdiMbXqxAd6/eNlVmo=","signature":"xhU0Rnnf/gkTtdbacWaj38eoHyJgFpW29LvfNdZ4iLj3R5yZu6OXoGxZPg22r/qtr7xZWl34rerJ2QxK2Hr+AQ==","producer":"z1qzfq7urv5ykn9dnny9pe0z7dkssxqjn97wrv42"}
+
+  - name: ledger.getMomentumByHash
+    summary: Returns the momentum with the given hash.
+    description: >-
+      Returns the momentum with the given hash. It returns null if no
+      momentum with that hash exists.
+    params:
+      - name: hash
+        required: true
+        schema:
+          $ref: "#/components/schemas/Hash"
+        description: Hash of the momentum to look up.
+    result:
+      name: momentum
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/Momentum"
+          - type: "null"
+      description: The momentum, or null if no momentum with that hash exists.
+    examples:
+      - name: momentumByHash
+        params:
+          - name: hash
+            value: "bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92"
+        result:
+          name: momentum
+          value: {"version":1,"chainIdentifier":1,"hash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","previousHash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","height":13474918,"timestamp":1781186060,"data":"","content":[{"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","height":1666}],"changesHash":"40bd54b5ee832fbaa82f4b32ccd0d6cd215612515293c7f1878c2281bb3dc42d","publicKey":"i0MkFAj+f4FipCHu/L4Ee3g23pkRR7eoOPe1VRH2S4Y=","signature":"WkNtMLT6Jk9i5hvipZu0xmv2H5Bfcgymgz3N7Hqpx6eSVjRKNbBwBbXcLULTYw1tYofsHv1lboPfuPspOZ5pCw==","producer":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx"}
+
+  - name: ledger.getMomentumsByHeight
+    summary: Returns momentums starting at a given height, in ascending height order.
+    description: >-
+      Returns up to count momentums starting at the given momentum-chain
+      height, in ascending height order. Heights past the frontier are
+      skipped, so list may hold fewer than count entries.
+
+
+      height must be at least 1 (the genesis momentum) or
+      ErrHeightParamIsZero is returned; count is a maximum and must not
+      exceed RpcMaxCountSize (1024) or ErrCountParamTooBig is returned. In
+      the result, count is the current frontier momentum height, not the
+      page length.
+    params:
+      - name: height
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: Momentum-chain height to start from; must be at least 1.
+      - name: count
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1024
+        description: Maximum number of momentums to return; must not exceed 1024.
+    result:
+      name: momentumList
+      schema:
+        $ref: "#/components/schemas/MomentumList"
+      description: >-
+        Momentums in ascending height order; count is the current frontier
+        momentum height.
+    examples:
+      - name: momentumsByHeight
+        params:
+          - name: height
+            value: 13474917
+          - name: count
+            value: 2
+        result:
+          name: momentumList
+          value: {"list":[{"version":1,"chainIdentifier":1,"hash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","previousHash":"5d6d682f0f0ea4a88a0d60fdc38ed8f8424ef1679da8eae7de98b070ea44bbb6","height":13474917,"timestamp":1781186030,"data":"","content":[],"changesHash":"a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a","publicKey":"dpJTNz+J+t+61CqNmqBCqN3jHhdiMbXqxAd6/eNlVmo=","signature":"xhU0Rnnf/gkTtdbacWaj38eoHyJgFpW29LvfNdZ4iLj3R5yZu6OXoGxZPg22r/qtr7xZWl34rerJ2QxK2Hr+AQ==","producer":"z1qzfq7urv5ykn9dnny9pe0z7dkssxqjn97wrv42"},{"version":1,"chainIdentifier":1,"hash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","previousHash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","height":13474918,"timestamp":1781186060,"data":"","content":[{"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","height":1666}],"changesHash":"40bd54b5ee832fbaa82f4b32ccd0d6cd215612515293c7f1878c2281bb3dc42d","publicKey":"i0MkFAj+f4FipCHu/L4Ee3g23pkRR7eoOPe1VRH2S4Y=","signature":"WkNtMLT6Jk9i5hvipZu0xmv2H5Bfcgymgz3N7Hqpx6eSVjRKNbBwBbXcLULTYw1tYofsHv1lboPfuPspOZ5pCw==","producer":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx"}],"count":13474918}
+
+  - name: ledger.getMomentumsByPage
+    summary: Returns one page of the momentum chain, paginating backwards from the frontier.
+    description: >-
+      Returns one page of the momentum chain, paginating backwards from the
+      frontier: pageIndex 0 holds the pageSize most recent momentums,
+      pageIndex 1 the pageSize before those, and so on. Within a page,
+      momentums are ordered by descending height (newest first).
+
+
+      pageIndex is 0-based; pageSize must be at most RpcMaxPageSize (1024)
+      or ErrPageSizeParamTooBig is returned. Pages that extend past the
+      genesis momentum are truncated, and a page entirely before height 1
+      yields an empty list. In the result, count is the current frontier
+      momentum height.
+    params:
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number, counting backwards from the frontier.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of momentums per page; must be at most 1024.
+    result:
+      name: momentumList
+      schema:
+        $ref: "#/components/schemas/MomentumList"
+      description: >-
+        Momentums in descending height order (newest first); count is the
+        current frontier momentum height.
+    examples:
+      - name: momentumsByPage
+        params:
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: momentumList
+          value: {"list":[{"version":1,"chainIdentifier":1,"hash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","previousHash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","height":13474918,"timestamp":1781186060,"data":"","content":[{"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","height":1666}],"changesHash":"40bd54b5ee832fbaa82f4b32ccd0d6cd215612515293c7f1878c2281bb3dc42d","publicKey":"i0MkFAj+f4FipCHu/L4Ee3g23pkRR7eoOPe1VRH2S4Y=","signature":"WkNtMLT6Jk9i5hvipZu0xmv2H5Bfcgymgz3N7Hqpx6eSVjRKNbBwBbXcLULTYw1tYofsHv1lboPfuPspOZ5pCw==","producer":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx"},{"version":1,"chainIdentifier":1,"hash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","previousHash":"5d6d682f0f0ea4a88a0d60fdc38ed8f8424ef1679da8eae7de98b070ea44bbb6","height":13474917,"timestamp":1781186030,"data":"","content":[],"changesHash":"a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a","publicKey":"dpJTNz+J+t+61CqNmqBCqN3jHhdiMbXqxAd6/eNlVmo=","signature":"xhU0Rnnf/gkTtdbacWaj38eoHyJgFpW29LvfNdZ4iLj3R5yZu6OXoGxZPg22r/qtr7xZWl34rerJ2QxK2Hr+AQ==","producer":"z1qzfq7urv5ykn9dnny9pe0z7dkssxqjn97wrv42"}],"count":13474918}
+
+  - name: ledger.getDetailedMomentumsByHeight
+    summary: Returns momentums starting at a given height, each paired with the full account blocks it confirms.
+    description: >-
+      Behaves like ledger.getMomentumsByHeight (same parameters, limits,
+      ascending order and count semantics) but pairs each momentum with the
+      full account blocks it confirms instead of only their references.
+    params:
+      - name: height
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: Momentum-chain height to start from; must be at least 1.
+      - name: count
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1024
+        description: Maximum number of momentums to return; must not exceed 1024.
+    result:
+      name: detailedMomentumList
+      schema:
+        $ref: "#/components/schemas/DetailedMomentumList"
+      description: >-
+        Momentums in ascending height order, each with the full account
+        blocks it confirms; count is the current frontier momentum height.
+    examples:
+      - name: detailedMomentumsByHeight
+        params:
+          - name: height
+            value: 13474918
+          - name: count
+            value: 1
+        result:
+          name: detailedMomentumList
+          value: {"list":[{"blocks":[{"version":1,"chainIdentifier":1,"blockType":2,"hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","previousHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","height":1666,"momentumAcknowledged":{"hash":"d45c282adc48ad1a75920182cdc365b46bce7df23715d6232eb041d289bf516e","height":13474913},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"d135f5a9880251cdfa2c729b141cbceeb9ba271ecb62c7573bcbcd74de1dbbda","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"m5TV9ce+NISz0Ui4yt5GXsv89wINQa1Eq5qeLCrJVIKF6bCCx8b1ViTF1q4bvzFS2fEdV/nNOtvKSsmJxH3TDg==","token":null,"confirmationDetail":{"numConfirmations":3,"momentumHeight":13474918,"momentumHash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","momentumTimestamp":1781186060},"pairedAccountBlock":{"version":1,"chainIdentifier":1,"blockType":5,"hash":"026daf0567c9936a659a9a4fdae231307bd299bd6bc6b50ce0f9b2a623adc572","previousHash":"c498d385032104adbb521b006cf36823403d4ed0165b1dc261e08d7c73ded1f1","height":89371,"momentumAcknowledged":{"hash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","height":13474918},"address":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","toAddress":"z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","descendantBlocks":[],"data":"AAAAAAAAAAI=","fusedPlasma":0,"difficulty":0,"nonce":"0000000000000000","basePlasma":0,"usedPlasma":0,"changesHash":"9db7103ff21499ac879ee4312229a3205b77f32010473a19a45d50a9e2dceaeb","publicKey":null,"signature":null,"token":null,"confirmationDetail":{"numConfirmations":1,"momentumHeight":13474920,"momentumHash":"e71195ac444a2bf5db7a19c6a4d521a8fc8f1fddf9acc43519b8f84bb1b5ccea","momentumTimestamp":1781186120},"pairedAccountBlock":null}}],"momentum":{"version":1,"chainIdentifier":1,"hash":"bce531e428758183f76fdf8916eecaf6f2db303939aa84f2fc82a587a5d65d92","previousHash":"2b9225c4d2ff1085fb15b528d8029e02a19b41513b85e0fe60704f8849c179e0","height":13474918,"timestamp":1781186060,"data":"","content":[{"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","height":1666}],"changesHash":"40bd54b5ee832fbaa82f4b32ccd0d6cd215612515293c7f1878c2281bb3dc42d","publicKey":"i0MkFAj+f4FipCHu/L4Ee3g23pkRR7eoOPe1VRH2S4Y=","signature":"WkNtMLT6Jk9i5hvipZu0xmv2H5Bfcgymgz3N7Hqpx6eSVjRKNbBwBbXcLULTYw1tYofsHv1lboPfuPspOZ5pCw==","producer":"z1qr9dd6qmzwr8sazns24lna8zz5e8208nqq2hcx"}}],"count":13474920}
+
+  - name: ledger.publishRawTransaction
+    summary: Submits a fully signed account block to the node.
+    x-state-changing: true
+    description: >-
+      Submits a fully signed account block to the node. The block is
+      applied through the VM supervisor against the frontier state and, on
+      success, handed to the broadcaster for network propagation; null is
+      returned in that case.
+
+
+      It returns ErrParamIsNull for a null block, an error if the block's
+      chainIdentifier is non-zero and differs from the node's network id
+      (zero is accepted as "unset"), an error if the block's tokenStandard
+      is non-zero and unknown to the chain, and any validation error raised
+      while applying the block.
+    params:
+      - name: block
+        required: true
+        schema:
+          $ref: "#/components/schemas/AccountBlock"
+        description: >-
+          The fully signed account block to publish. The RPC-only extras
+          (token, confirmationDetail, pairedAccountBlock) are ignored on
+          input.
+    result:
+      name: "null"
+      schema:
+        type: "null"
+      description: Null on success.
+    # Request-only example: this method changes state and was NOT exercised
+    # against the live node. The example block is the real on-chain block
+    # 476a08f6... captured via ledger.getAccountBlockByHash, with the
+    # RPC-only extras stripped.
+    examples:
+      - name: publishRawTransaction
+        params:
+          - name: block
+            value: {"version":1,"chainIdentifier":1,"blockType":2,"hash":"476a08f66344d517771fd89b5895e5980f70e12c22c00f31fa6af37150d0850d","previousHash":"f15c9282b6fe983fac65c598673b1090b56f74d21c90bd90dd6bc801414fa119","height":1666,"momentumAcknowledged":{"hash":"d45c282adc48ad1a75920182cdc365b46bce7df23715d6232eb041d289bf516e","height":13474913},"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","toAddress":"z1qxemdeddedxaccelerat0rxxxxxxxxxxp4tk22","amount":"0","tokenStandard":"zts1qqqqqqqqqqqqqqqqtq587y","fromBlockHash":"0000000000000000000000000000000000000000000000000000000000000000","descendantBlocks":[],"data":"IAk+pg==","fusedPlasma":73500,"difficulty":0,"nonce":"0000000000000000","basePlasma":73500,"usedPlasma":73500,"changesHash":"d135f5a9880251cdfa2c729b141cbceeb9ba271ecb62c7573bcbcd74de1dbbda","publicKey":"VqmN1jc+s+khlayjnEuuxCCzSN7UTBGEFJVIjr7rFsI=","signature":"m5TV9ce+NISz0Ui4yt5GXsv89wINQa1Eq5qeLCrJVIKF6bCCx8b1ViTF1q4bvzFS2fEdV/nNOtvKSsmJxH3TDg=="}
