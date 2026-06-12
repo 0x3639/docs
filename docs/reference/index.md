@@ -8,7 +8,8 @@ slug: /reference
 - **[Go package reference](/reference/packages/rpc-api)** — generated from
   godoc comments in [0x3639/go-zenon](https://github.com/0x3639/go-zenon)
   at the ref pinned in `PINNED_GO_ZENON`. Coverage grows as godoc layers
-  land; currently: `rpc/api`, `rpc/api/embedded`, `rpc/api/subscribe`.
+  land; currently: `rpc/api`, `rpc/api/embedded`, `rpc/api/subscribe`,
+  `common`, `common/types`, `common/db`, `common/crypto`.
 - **OpenRPC spec** (`/openrpc.json`) — machine-readable JSON-RPC API
   description (namespaces covered so far: `ledger`, `embedded.pillar`).
   Pending: `embedded.governance` (not yet in any pinned release).
