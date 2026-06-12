@@ -9,7 +9,9 @@ slug: /reference
   godoc comments in [0x3639/go-zenon](https://github.com/0x3639/go-zenon)
   at the ref pinned in `PINNED_GO_ZENON`. Coverage grows as godoc layers
   land; currently: `rpc/api`, `rpc/api/embedded`, `rpc/api/subscribe`,
-  `common`, `common/types`, `common/db`, `common/crypto`.
+  `common`, `common/types`, `common/db`, `common/crypto`, `chain`,
+  `chain/nom`, `chain/store`, `chain/momentum`, `chain/account`,
+  `chain/account/mailbox`, `chain/genesis`.
 - **OpenRPC spec** (`/openrpc.json`) — machine-readable JSON-RPC API
   description (namespaces covered so far: `ledger`, `embedded.pillar`).
   Pending: `embedded.governance` (not yet in any pinned release).
