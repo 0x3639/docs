@@ -28,6 +28,16 @@ the frontier (latest) momentum — the head of the momentum chain:
 {@inject: examples/snippets.go#connect-and-query}
 
 The `Call` / `CallContext` methods take a pointer to unmarshal the result
-into, the method name, and any positional parameters. See the
-[API Playground](/api-playground) for the full set of methods and the
-[JSON-RPC reference](/reference) for their schemas.
+into, the method name, and any positional parameters.
+
+## Calling an embedded contract
+
+Embedded-contract methods work the same way — pass the method name and its
+positional parameters. Here we read an address's available plasma from the
+plasma contract:
+
+{@inject: examples/snippets.go#query-plasma}
+
+See the [API Playground](/api-playground) for the full set of methods and the
+[JSON-RPC reference](/reference) for their schemas. To build, sign, and send a
+transaction, continue to [Your First Transaction](/developer/first-transaction).
