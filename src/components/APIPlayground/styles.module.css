@@ -533,3 +533,18 @@
     max-height: 200px;
   }
 }
+.transportNote {
+  background: rgba(33, 150, 243, 0.08);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-left: 3px solid var(--ifm-color-primary);
+  color: var(--ifm-color-content);
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.transportNote code {
+  font-size: 0.95em;
+}

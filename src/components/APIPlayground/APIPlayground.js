@@ -103,6 +103,7 @@ export default function APIPlayground() {
       try {
         const result = await sendRequest(wireMethod, paramsArray);
         setResponse(result);
+        cleanupSubscription(result);
       } catch (err) {
         setResponse({
           error: {
@@ -202,6 +203,17 @@ export default function APIPlayground() {
     return `param${index}`;
   };
 
+  // Websocket subscriptions are opened on the wire via ledger.subscribe and
+  // return a subscription id; this request/response playground shows that id
+  // but does not render the live event stream, so immediately unsubscribe to
+  // avoid leaving a dangling subscription on the node.
+  const cleanupSubscription = (result) => {
+    const info = getMethodByName(selectedMethod);
+    if (info?.transport === 'websocket' && typeof result?.result === 'string') {
+      sendRequest('ledger.unsubscribe', [result.result]).catch(() => {});
+    }
+  };
+
   const handleExecute = async () => {
     if (!selectedMethod || !isConnected) return;
 
@@ -225,7 +237,8 @@ export default function APIPlayground() {
     try {
       const result = await sendRequest(wireMethod, paramsArray);
       setResponse(result);
-      
+      cleanupSubscription(result);
+
       // Generate clean shareable URL (without response data)
       const shareUrl = generateShareableUrl(selectedMethod, parameters);
       setShareableUrl(shareUrl);
@@ -350,6 +363,16 @@ export default function APIPlayground() {
       {selectedMethod && (
         <div className={styles.parametersSection}>
           <h2>Parameters</h2>
+          {getMethodByName(selectedMethod)?.transport === 'websocket' && (
+            <div className={styles.transportNote}>
+              <strong>Websocket subscription.</strong> This method opens a
+              streaming subscription on the wire via <code>ledger.subscribe</code>.
+              Executing it returns the subscription id; this playground shows
+              that reply but does not render the pushed event stream (and
+              unsubscribes immediately afterwards). To consume live events, use
+              a persistent websocket client.
+            </div>
+          )}
           <ParameterBuilder
             method={selectedMethod}
             parameters={parameters}
