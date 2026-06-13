@@ -1,0 +1,155 @@
+# OpenRPC fragments for the "embedded.token" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of TokenAPI in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/embedded/token.go), with the wire
+# result shape taken from the api.Token type in rpc/api/ledger_types.go and
+# the contract storage layout in vm/embedded/definition/token.go. The
+# namespace reads the registry of ZTS tokens held by the token embedded
+# contract as of the frontier momentum: each entry describes a token issued
+# through the contract's IssueToken method (which costs exactly 1 ZNN),
+# keyed by its ZTS identifier, with its supplies and the owner-controlled
+# flags that govern minting, burning and updates. Only the owner may mint
+# (and only while isMintable) or change a token's flags; isBurnable true
+# lets anyone burn the token while the owner can burn it regardless. Supply
+# fields are raw base units and, because the underlying values are big.Int,
+# are rendered as base-10 JSON strings; decimals is an unsigned integer.
+# Every exported method is served as embedded.token.<lowerCamelMethodName>.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. List examples were requested with small page sizes to stay
+# readable.
+schemas:
+  TokenInfoList:
+    type: object
+    description: >-
+      One page of tokens as returned by embedded.token.getAll and
+      embedded.token.getByOwner. count is the total number of tokens that
+      matched the producing method's filter, not the number of entries in
+      list.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+        description: >-
+          Total number of tokens matching the producing method's filter
+          (all registered tokens for getAll; tokens owned by the address
+          for getByOwner).
+      list:
+        type: array
+        description: >-
+          The requested page of token descriptions, in storage (ZTS
+          identifier) order.
+        items:
+          $ref: "#/components/schemas/TokenInfo"
+    required: [count, list]
+
+methods:
+  - name: embedded.token.getAll
+    summary: Returns one page of all registered ZTS tokens, in ZTS identifier order.
+    description: >-
+      Returns one page of all ZTS tokens registered in the token contract at
+      the frontier momentum, in storage (ZTS identifier) order. count is the
+      total number of registered tokens, not the number of entries in list. A
+      pageSize above 1024 is rejected with api.ErrPageSizeParamTooBig.
+    params:
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of tokens per page; must be at most 1024.
+    result:
+      name: tokenInfoList
+      schema:
+        $ref: "#/components/schemas/TokenInfoList"
+      description: >-
+        One page of registered tokens in storage (ZTS identifier) order;
+        count is the total number of registered tokens.
+    examples:
+      - name: getAll
+        params:
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 3
+        result:
+          name: tokenInfoList
+          value: {"count":328,"list":[{"name":"Jenkem","symbol":"JENKM","domain":"jenkem.neocities.org","totalSupply":"100000010000000","decimals":7,"owner":"z1qqfmq2kyk2ns4ua9czzrg4z4spcj3q2nx6slth","tokenStandard":"zts1qqp9ng6eqy7gzgpak0wya9","maxSupply":"9223372036854775807","isBurnable":false,"isMintable":true,"isUtility":false},{"name":"A","symbol":"A","domain":"First.com","totalSupply":"100000000000","decimals":5,"owner":"z1qpt8hlnp6hzlryc676er94wy2dqwmtwrvl9c3a","tokenStandard":"zts1qq3aysggc0t4e07t23x6h0","maxSupply":"100000000000","isBurnable":false,"isMintable":false,"isUtility":true},{"name":"Adobe","symbol":"ADOBE","domain":"Adobe.xyz","totalSupply":"1000000000000000","decimals":6,"owner":"z1qr2qpnknmehvz59xenjd8gd92dv5c4y5svhkzn","tokenStandard":"zts1qzsdfp4wn7jt7mpdrkfurl","maxSupply":"1000000000000000","isBurnable":false,"isMintable":false,"isUtility":true}]}
+
+  - name: embedded.token.getByOwner
+    summary: Returns one page of the tokens currently owned by an address.
+    description: >-
+      Returns one page of the tokens whose current owner is owner, filtered
+      from the full registry at the frontier momentum and paged after
+      filtering, preserving storage (ZTS identifier) order. count is the
+      total number of tokens owned by the address, not the number of entries
+      in list; an address that owns no tokens yields an empty list. A
+      pageSize above 1024 is rejected with api.ErrPageSizeParamTooBig.
+    params:
+      - name: owner
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Owner address whose tokens to list.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of tokens per page; must be at most 1024.
+    result:
+      name: tokenInfoList
+      schema:
+        $ref: "#/components/schemas/TokenInfoList"
+      description: >-
+        One page of the owner's tokens in storage (ZTS identifier) order;
+        count is the total number of tokens owned by the address.
+    examples:
+      - name: getByOwner
+        params:
+          - name: owner
+            value: "z1qqfmq2kyk2ns4ua9czzrg4z4spcj3q2nx6slth"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 5
+        result:
+          name: tokenInfoList
+          value: {"count":1,"list":[{"name":"Jenkem","symbol":"JENKM","domain":"jenkem.neocities.org","totalSupply":"100000010000000","decimals":7,"owner":"z1qqfmq2kyk2ns4ua9czzrg4z4spcj3q2nx6slth","tokenStandard":"zts1qqp9ng6eqy7gzgpak0wya9","maxSupply":"9223372036854775807","isBurnable":false,"isMintable":true,"isUtility":false}]}
+
+  - name: embedded.token.getByZts
+    summary: Returns the token registered under a given ZTS identifier.
+    description: >-
+      Returns the token registered under the given ZTS identifier at the
+      frontier momentum, or null without an error when no token with that
+      identifier exists.
+    params:
+      - name: zts
+        required: true
+        schema:
+          $ref: "#/components/schemas/TokenStandard"
+        description: The ZTS identifier to look up.
+    result:
+      name: tokenInfo
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/TokenInfo"
+          - type: "null"
+      description: The token, or null when no token with that ZTS identifier exists.
+    examples:
+      - name: getByZtsZnn
+        params:
+          - name: zts
+            value: "zts1znnxxxxxxxxxxxxx9z4ulx"
+        result:
+          name: tokenInfo
+          value: {"name":"ZNN","symbol":"ZNN","domain":"zenon.network","totalSupply":"1350171464759346","decimals":8,"owner":"z1qxemdeddedxt0kenxxxxxxxxxxxxxxxxh9amk0","tokenStandard":"zts1znnxxxxxxxxxxxxx9z4ulx","maxSupply":"9007199254740991","isBurnable":true,"isMintable":true,"isUtility":true}

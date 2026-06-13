@@ -1,0 +1,388 @@
+# OpenRPC fragments for the "embedded.accelerator" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of AcceleratorApi in the
+# pinned go-zenon source (.build/go-zenon/rpc/api/embedded/accelerator.go),
+# with wire struct json tags taken from vm/embedded/definition/accelerator.go
+# (Project, Phase) and the shared vote types in
+# vm/embedded/definition/common.go (PillarVote, VoteBreakdown). The namespace
+# reads the state of the accelerator embedded contract (the Accelerator-Z
+# funding programme) as of the frontier momentum: funding projects, their
+# phases and the pillar votes cast on both. A project requests a total budget
+# denominated in ZNN and QSR that its phases collectively draw down; projects
+# and phases move through the statuses voting (0), active (1), paid (2),
+# closed (3) and completed (4) (active and closed apply only to projects,
+# paid only to phases). Requested ZNN and QSR amounts are big.Int values
+# rendered as base-10 JSON strings in the smallest unit (10^8 per ZNN or QSR);
+# timestamps are unix seconds. Every exported method is served as
+# embedded.accelerator.<lowerCamelMethodName>.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. List examples were requested with a small page size to stay
+# readable.
+schemas:
+  AcceleratorVoteBreakdown:
+    type: object
+    description: >-
+      Tallies the pillar votes recorded for a votable hash (a project or a
+      phase) as of the frontier momentum. The contract accepts the hash when
+      total exceeds a configured percentage of the registered pillars and yes
+      outnumbers no.
+    properties:
+      id:
+        $ref: "#/components/schemas/Hash"
+        description: The project or phase id the tally is for.
+      total:
+        type: integer
+        minimum: 0
+        description: Every vote cast on the hash, including abstentions.
+      yes:
+        type: integer
+        minimum: 0
+        description: Votes in favor.
+      no:
+        type: integer
+        minimum: 0
+        description: Votes against.
+    required: [id, total, yes, no]
+
+  AcceleratorPillarVote:
+    type: object
+    description: >-
+      One pillar's vote on a project or phase. A pillar voting again on the
+      same id overwrites its previous vote.
+    properties:
+      id:
+        $ref: "#/components/schemas/Hash"
+        description: The project or phase id voted on.
+      name:
+        type: string
+        description: The voting pillar's name.
+      vote:
+        type: integer
+        description: "Vote choice: 0 for yes, 1 for no, 2 for abstain."
+    required: [id, name, vote]
+
+  AcceleratorPhase:
+    type: object
+    description: >-
+      One funding phase of a project, paired with the tally of pillar votes
+      cast on it. The phase fields come from contract state; updating a phase
+      while it is still in voting changes its id and discards the votes cast
+      so far.
+    properties:
+      phase:
+        type: object
+        description: The stored phase as read from contract state.
+        properties:
+          id:
+            $ref: "#/components/schemas/Hash"
+            description: >-
+              Phase id: the hash of the AddPhase (or latest UpdatePhase) send
+              block, which also serves as the id pillars vote on.
+          projectID:
+            $ref: "#/components/schemas/Hash"
+            description: Id of the project this phase belongs to.
+          name:
+            type: string
+            description: The phase's name.
+          description:
+            type: string
+            description: The phase's description.
+          url:
+            type: string
+            description: A URL with further detail on the phase.
+          znnFundsNeeded:
+            $ref: "#/components/schemas/Amount"
+            description: >-
+              ZNN paid to the project owner when the phase passes its vote, in
+              smallest units, as a base-10 string.
+          qsrFundsNeeded:
+            $ref: "#/components/schemas/Amount"
+            description: >-
+              QSR paid to the project owner when the phase passes its vote, in
+              smallest units, as a base-10 string.
+          creationTimestamp:
+            type: integer
+            description: Unix seconds at which the phase was submitted.
+          acceptedTimestamp:
+            type: integer
+            description: Unix seconds at which the phase was paid; 0 until then.
+          status:
+            type: integer
+            description: "Phase status: 0 voting, 2 paid."
+        required:
+          - id
+          - projectID
+          - name
+          - description
+          - url
+          - znnFundsNeeded
+          - qsrFundsNeeded
+          - creationTimestamp
+          - acceptedTimestamp
+          - status
+      votes:
+        $ref: "#/components/schemas/AcceleratorVoteBreakdown"
+        description: The tally of pillar votes cast on this phase.
+    required: [phase, votes]
+
+  AcceleratorProject:
+    type: object
+    description: >-
+      One accelerator funding project read from contract state at the frontier
+      momentum, enriched with the tally of pillar votes on the project itself
+      and with its phases in submission order (the last is the current phase),
+      each carrying its own vote breakdown.
+    properties:
+      id:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          Project id: the hash of the CreateProject send block, which also
+          serves as the id pillars vote on.
+      owner:
+        $ref: "#/components/schemas/Address"
+        description: The address that created the project and receives its funds.
+      name:
+        type: string
+        description: The project's name.
+      description:
+        type: string
+        description: The project's description.
+      url:
+        type: string
+        description: A URL with further detail on the project.
+      znnFundsNeeded:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          The project's total requested ZNN budget, in smallest units, as a
+          base-10 string.
+      qsrFundsNeeded:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          The project's total requested QSR budget, in smallest units, as a
+          base-10 string.
+      creationTimestamp:
+        type: integer
+        description: Unix seconds at which the project was created.
+      lastUpdateTimestamp:
+        type: integer
+        description: >-
+          Unix seconds of the project's most recent update; the key
+          embedded.accelerator.getAll sorts by.
+      status:
+        type: integer
+        description: "Project status: 0 voting, 1 active, 3 closed, 4 completed."
+      phaseIds:
+        type: array
+        description: The project's phase ids, in submission order.
+        items:
+          $ref: "#/components/schemas/Hash"
+      votes:
+        $ref: "#/components/schemas/AcceleratorVoteBreakdown"
+        description: The tally of pillar votes cast on the project itself.
+      phases:
+        type: array
+        description: >-
+          The project's phases in phaseIds order, each with its own vote
+          breakdown.
+        items:
+          $ref: "#/components/schemas/AcceleratorPhase"
+    required:
+      - id
+      - owner
+      - name
+      - description
+      - url
+      - znnFundsNeeded
+      - qsrFundsNeeded
+      - creationTimestamp
+      - lastUpdateTimestamp
+      - status
+      - phaseIds
+      - votes
+      - phases
+
+  AcceleratorProjectList:
+    type: object
+    description: >-
+      One page of projects as returned by embedded.accelerator.getAll. count
+      is the total number of projects in contract state, not the number of
+      entries in list.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+        description: Total number of projects in contract state.
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/AcceleratorProject"
+    required: [count, list]
+
+methods:
+  - name: embedded.accelerator.getAll
+    summary: Returns one page of every accelerator project, most recently updated first.
+    description: >-
+      Returns one page of every accelerator project, in any status, read from
+      contract state at the frontier momentum and enriched with each project's
+      vote breakdown and phases. The full list is sorted by descending
+      last-update timestamp before the page window is cut (the sort is stable,
+      so projects sharing a timestamp keep their storage order), and count is
+      the total number of projects. Unlike most paged methods in this package,
+      pageSize is not capped.
+    params:
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of projects per page; not capped.
+    result:
+      name: acceleratorProjectList
+      schema:
+        $ref: "#/components/schemas/AcceleratorProjectList"
+      description: >-
+        One page of projects sorted by descending last-update timestamp;
+        count is the total number of projects.
+    examples:
+      - name: getAll
+        params:
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 3
+        result:
+          name: acceleratorProjectList
+          value: {"count":188,"list":[{"id":"be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","owner":"z1qpfx2fmsk8hud5wwqe5dlywq9e3ln8tl20uc5n","name":"Bounded Verification Research","description":"The work covers a sequence of related research notes exploring bounded verification under strict resource constraints, including header-only verification, bounded inclusion, and minimal state frontier verification.","url":"https://github.com/TminusZ/zenon-developer-commons","znnFundsNeeded":"500000000000","qsrFundsNeeded":"5000000000000","creationTimestamp":1766052130,"lastUpdateTimestamp":1773421100,"status":4,"phaseIds":["32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338"],"votes":{"id":"be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","total":32,"yes":25,"no":5},"phases":[{"phase":{"id":"32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338","projectID":"be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","name":"Completed Research","description":"This phase covers research, analysis, and documentation that has already been completed and publicly released in good faith prior to and during the proposal period.","url":"https://github.com/TminusZ/zenon-developer-commons/blob/main/docs/az/STATUS_UPDATE_FULL_QUORUM.md","znnFundsNeeded":"500000000000","qsrFundsNeeded":"5000000000000","creationTimestamp":1767105490,"acceptedTimestamp":1773421100,"status":2},"votes":{"id":"32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338","total":33,"yes":32,"no":0}}]},{"id":"3ac152020f5f408e8a41a7189376ec287361cb39324c5b8177e9bb73632313ad","owner":"z1qqguf909ple8m5qt6p7km2nx25kdy8fcdufy55","name":"Burnback Relay","description":"BNB Address: 0x3849192fFe02558d039cAD22f325340C9e961A7c","url":"https://forum.hypercore.one/t/az-bsc-burnback-relay/920","znnFundsNeeded":"500000000000","qsrFundsNeeded":"10000000000","creationTimestamp":1767318190,"lastUpdateTimestamp":1767318190,"status":3,"phaseIds":[],"votes":{"id":"3ac152020f5f408e8a41a7189376ec287361cb39324c5b8177e9bb73632313ad","total":14,"yes":6,"no":0},"phases":[]},{"id":"c45f7b2e2f4c07e6c6d3706e05345b15062bc897000fb214566e71a5c768e6ae","owner":"z1qzlsm93a7d6nmsx609gnyv8rjmlzk3t2n4hj7s","name":"Unibridge - One-way Home","description":"$0.10 ZNN prophecy fulfilled.","url":"https://forum.zenon.org/t/unibridge-z-the-prophecy/2016","znnFundsNeeded":"500000000000","qsrFundsNeeded":"10000000000","creationTimestamp":1752197840,"lastUpdateTimestamp":1752197840,"status":3,"phaseIds":[],"votes":{"id":"c45f7b2e2f4c07e6c6d3706e05345b15062bc897000fb214566e71a5c768e6ae","total":10,"yes":7,"no":0},"phases":[]}]}
+
+  - name: embedded.accelerator.getProjectById
+    summary: Returns the project with the given id, with its vote breakdown and phases.
+    description: >-
+      Returns the project with the given id, enriched with its vote breakdown
+      and its phases (each carrying their own vote breakdown), read from
+      contract state at the frontier momentum. An id with no project entry is
+      rejected with ErrDataNonExistent.
+    params:
+      - name: id
+        required: true
+        schema:
+          $ref: "#/components/schemas/Hash"
+        description: The project id to look up.
+    result:
+      name: acceleratorProject
+      schema:
+        $ref: "#/components/schemas/AcceleratorProject"
+      description: The project with its vote breakdown and phases.
+    examples:
+      - name: getProjectById
+        params:
+          - name: id
+            value: "3ac152020f5f408e8a41a7189376ec287361cb39324c5b8177e9bb73632313ad"
+        result:
+          name: acceleratorProject
+          value: {"id":"3ac152020f5f408e8a41a7189376ec287361cb39324c5b8177e9bb73632313ad","owner":"z1qqguf909ple8m5qt6p7km2nx25kdy8fcdufy55","name":"Burnback Relay","description":"BNB Address: 0x3849192fFe02558d039cAD22f325340C9e961A7c","url":"https://forum.hypercore.one/t/az-bsc-burnback-relay/920","znnFundsNeeded":"500000000000","qsrFundsNeeded":"10000000000","creationTimestamp":1767318190,"lastUpdateTimestamp":1767318190,"status":3,"phaseIds":[],"votes":{"id":"3ac152020f5f408e8a41a7189376ec287361cb39324c5b8177e9bb73632313ad","total":14,"yes":6,"no":0},"phases":[]}
+
+  - name: embedded.accelerator.getPhaseById
+    summary: Returns the phase with the given id, with its vote breakdown.
+    description: >-
+      Returns the phase with the given id together with the tally of pillar
+      votes cast on it, read from contract state at the frontier momentum. An
+      id with no phase entry is rejected with ErrDataNonExistent.
+    params:
+      - name: id
+        required: true
+        schema:
+          $ref: "#/components/schemas/Hash"
+        description: The phase id to look up.
+    result:
+      name: acceleratorPhase
+      schema:
+        $ref: "#/components/schemas/AcceleratorPhase"
+      description: The phase with its vote breakdown.
+    examples:
+      - name: getPhaseById
+        params:
+          - name: id
+            value: "32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338"
+        result:
+          name: acceleratorPhase
+          value: {"phase":{"id":"32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338","projectID":"be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","name":"Completed Research","description":"This phase covers research, analysis, and documentation that has already been completed and publicly released in good faith prior to and during the proposal period.","url":"https://github.com/TminusZ/zenon-developer-commons/blob/main/docs/az/STATUS_UPDATE_FULL_QUORUM.md","znnFundsNeeded":"500000000000","qsrFundsNeeded":"5000000000000","creationTimestamp":1767105490,"acceptedTimestamp":1773421100,"status":2},"votes":{"id":"32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338","total":33,"yes":32,"no":0}}
+
+  - name: embedded.accelerator.getVoteBreakdown
+    summary: Returns the tally of pillar votes cast on a project or phase.
+    description: >-
+      Returns the tally of pillar votes cast on the project or phase with the
+      given id as of the frontier momentum: total counts every vote including
+      abstentions, while yes and no count only those choices. The id is not
+      validated against the stored projects and phases, so an id nobody has
+      voted on yields zero tallies rather than an error; the method does
+      return ErrDataNonExistent only in the internal case where the breakdown
+      cannot be produced.
+    params:
+      - name: id
+        required: true
+        schema:
+          $ref: "#/components/schemas/Hash"
+        description: The project or phase id whose votes to tally.
+    result:
+      name: acceleratorVoteBreakdown
+      schema:
+        $ref: "#/components/schemas/AcceleratorVoteBreakdown"
+      description: The vote tally for the id.
+    examples:
+      - name: getVoteBreakdown
+        params:
+          - name: id
+            value: "be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2"
+        result:
+          name: acceleratorVoteBreakdown
+          value: {"id":"be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","total":32,"yes":25,"no":5}
+
+  - name: embedded.accelerator.getPillarVotes
+    summary: Returns a named pillar's votes on the given project or phase ids.
+    description: >-
+      Returns the votes the named pillar has cast on the given project or
+      phase ids as of the frontier momentum, one result per requested hash in
+      the same order. A hash the pillar has not voted on yields a null entry
+      rather than an error; vote values are 0 for yes, 1 for no and 2 for
+      abstain.
+    params:
+      - name: name
+        required: true
+        schema:
+          type: string
+        description: The pillar name whose votes to look up.
+      - name: hashes
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hash"
+        description: The project or phase ids to look up, iterated in order.
+    result:
+      name: acceleratorPillarVotes
+      schema:
+        type: array
+        description: >-
+          One entry per requested hash, in request order; null where the
+          pillar has not voted on that hash.
+        items:
+          oneOf:
+            - $ref: "#/components/schemas/AcceleratorPillarVote"
+            - type: "null"
+      description: The pillar's vote per requested hash, in request order.
+    examples:
+      - name: getPillarVotes
+        params:
+          - name: name
+            value: "DeeZNNutz.com"
+          - name: hashes
+            value: ["be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338"]
+        result:
+          name: acceleratorPillarVotes
+          value: [{"id":"be968cd5ffc72ef40bb40431ceac8257467cba86b28c8e022aec152ca222f5f2","name":"DeeZNNutz.com","vote":0},{"id":"32e5f3fd26b3848b6a236ad4660df4344a39bee8f93e9898c5afad0ac9421338","name":"DeeZNNutz.com","vote":0}]

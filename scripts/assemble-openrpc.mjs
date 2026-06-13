@@ -16,7 +16,7 @@ const doc = {
   info: {
     title: 'Zenon Network JSON-RPC API',
     version: pin.ref.slice(0, 12),
-    description: 'JSON-RPC 2.0 API of go-zenon. Hand-authored from the pinned source (godoc-verified); examples captured from a live public node. Namespaces covered so far: ledger, embedded.pillar.',
+    description: 'JSON-RPC 2.0 API of go-zenon. Hand-authored from the pinned source (godoc-verified); examples captured from a live public node. Namespaces covered: ledger, stats, subscribe (websocket), and embedded.{pillar, plasma, token, stake, sentinel, swap, accelerator, spork, htlc, bridge, liquidity}.',
   },
   servers: [{ name: 'public', url: 'https://my.hc1node.com:35997' }],
   methods: [],

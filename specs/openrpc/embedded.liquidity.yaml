@@ -1,0 +1,476 @@
+# OpenRPC fragments for the "embedded.liquidity" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of LiquidityApi in the
+# pinned go-zenon source (.build/go-zenon/rpc/api/embedded/liquidity.go,
+# shared.go) and wire struct json tags in vm/embedded/definition
+# (liquidity.go LiquidityInfo, TokenTuple, LiquidityStakeEntry; common.go
+# SecurityInfoVariable, TimeChallengeInfo, RewardDeposit). The namespace
+# reads the state of the liquidity embedded contract as of the frontier
+# momentum. The contract rewards staking of administrator-whitelisted
+# liquidity (LP) ZTS tokens: each token tuple assigns a token its share of
+# the epoch ZNN and QSR rewards (in basis points, 10000 = 100%) and a
+# minimum stake amount, and a stake locks LP tokens until an expiration
+# time, earning a duration-weighted share of the rewards. On top of the
+# protocol liquidity emission the contract can distribute extra ZNN and QSR
+# from its own balance each epoch. Sensitive administrator methods
+# (NominateGuardians, SetTokenTuple, ChangeAdministrator,
+# SetAdditionalReward) are protected by guardian-backed time challenges.
+# Epochs are consecutive 24-hour windows counted from the genesis
+# timestamp, starting at epoch 0; token amounts are expressed in the
+# smallest unit (10^8 per ZNN or QSR) with big.Int values rendered as
+# base-10 JSON strings. Every exported method is served as
+# embedded.liquidity.<lowerCamelMethodName>.
+#
+# The reward wire types (RewardHistoryList, RewardHistoryEntry,
+# RewardDeposit) are shared across the reward-distributing namespaces and
+# are defined once in the pillar fragment; this fragment reuses them by
+# $ref (getFrontierRewardByPage -> RewardHistoryList, getUncollectedReward
+# -> RewardDeposit). SecurityInfo and TimeChallenge wire structs are shared
+# in code with the bridge contract, but each fragment defines its own
+# schema copies; to avoid collision with the parallel bridge fragment every
+# schema here is prefixed with "Liquidity".
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. List examples were requested with small page sizes to stay
+# readable.
+schemas:
+  LiquidityTokenTuple:
+    type: object
+    description: >-
+      The reward configuration of one whitelisted liquidity (LP) token.
+      The two percentage fields are in basis points (10000 = 100%); across
+      all tuples the znnPercentage values sum to 10000 and the
+      qsrPercentage values sum to 10000.
+    properties:
+      tokenStandard:
+        $ref: "#/components/schemas/TokenStandard"
+        description: The LP token's ZTS standard.
+      znnPercentage:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        description: >-
+          The token's share of the epoch's liquidity ZNN rewards, in basis
+          points (10000 = 100%).
+      qsrPercentage:
+        type: integer
+        minimum: 0
+        maximum: 10000
+        description: >-
+          The token's share of the epoch's liquidity QSR rewards, in basis
+          points (10000 = 100%).
+      minAmount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Smallest stake accepted for this token, in the token's smallest
+          units, as a base-10 string.
+    required: [tokenStandard, znnPercentage, qsrPercentage, minAmount]
+
+  LiquidityInfo:
+    type: object
+    description: >-
+      The liquidity contract's global state as reported by
+      embedded.liquidity.getLiquidityInfo. Before the state is first
+      written it reads as defaults: the initial administrator hard-coded in
+      vm/constants, not halted, zero extra rewards and no token tuples.
+    properties:
+      administrator:
+        $ref: "#/components/schemas/Address"
+        description: The contract's administrator address.
+      isHalted:
+        type: boolean
+        description: Whether staking on the contract is currently halted.
+      znnReward:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Extra ZNN distributed each epoch from the contract's own balance
+          on top of the protocol liquidity emission, in smallest units, as
+          a base-10 string.
+      qsrReward:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Extra QSR distributed each epoch from the contract's own balance
+          on top of the protocol liquidity emission, in smallest units, as
+          a base-10 string.
+      tokenTuples:
+        type: array
+        description: The whitelisted reward-earning LP token tuples.
+        items:
+          $ref: "#/components/schemas/LiquidityTokenTuple"
+    required: [administrator, isHalted, znnReward, qsrReward, tokenTuples]
+
+  LiquidityStakeEntry:
+    type: object
+    description: >-
+      One active liquidity stake entry: an amount of an LP token locked
+      from startTime until expirationTime, earning rewards proportional to
+      its weightedAmount (the duration-weighted stake).
+    properties:
+      amount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Staked amount in the token's smallest units, as a base-10 string.
+      tokenStandard:
+        $ref: "#/components/schemas/TokenStandard"
+        description: The staked LP token's ZTS standard.
+      weightedAmount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Duration-weighted amount reward shares are computed from, in
+          smallest units, as a base-10 string.
+      startTime:
+        type: integer
+        description: Unix seconds at which the stake was created.
+      revokeTime:
+        type: integer
+        description: >-
+          Unix seconds at which the stake was cancelled; 0 while the stake
+          is active. Active entries (revokeTime 0) are the only ones
+          listed.
+      expirationTime:
+        type: integer
+        description: >-
+          Unix seconds from which the stake may be cancelled to recover the
+          locked tokens.
+      stakeAddress:
+        $ref: "#/components/schemas/Address"
+        description: The staker's address, recovered from the storage key.
+      id:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          Entry id: the hash of the LiquidityStake send block; used to
+          cancel the stake.
+    required:
+      - amount
+      - tokenStandard
+      - weightedAmount
+      - startTime
+      - revokeTime
+      - expirationTime
+      - stakeAddress
+      - id
+
+  LiquidityStakeList:
+    type: object
+    description: >-
+      One page of an address's active liquidity stake entries, returned by
+      embedded.liquidity.getLiquidityStakeEntriesByAddress. totalAmount,
+      totalWeightedAmount and count cover all of the address's active
+      entries, not just the page.
+    properties:
+      totalAmount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Sum of the staked amount of every active entry of the address, in
+          smallest units, as a base-10 string.
+      totalWeightedAmount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Sum of the weighted amount of every active entry of the address,
+          in smallest units, as a base-10 string.
+      count:
+        type: integer
+        minimum: 0
+        description: Total number of active stake entries owned by the address.
+      list:
+        type: array
+        description: >-
+          The page of entries, sorted by ascending expiration time
+          (soonest-expiring first) with ties broken by ascending entry id.
+        items:
+          $ref: "#/components/schemas/LiquidityStakeEntry"
+    required: [totalAmount, totalWeightedAmount, count, list]
+
+  LiquiditySecurityInfo:
+    type: object
+    description: >-
+      The time-challenge security configuration of the liquidity contract,
+      as reported by embedded.liquidity.getSecurityInfo. Before security is
+      initialized it reads as the minimum delays from vm/constants with no
+      guardians.
+    properties:
+      guardians:
+        type: array
+        description: >-
+          The guardian addresses that may vote in a new administrator while
+          the contract is in emergency.
+        items:
+          $ref: "#/components/schemas/Address"
+      guardiansVotes:
+        type: array
+        description: >-
+          Per guardian (positionally aligned with guardians), the
+          administrator address it currently votes for; the zero address
+          means no vote.
+        items:
+          $ref: "#/components/schemas/Address"
+      administratorDelay:
+        type: integer
+        minimum: 0
+        description: >-
+          Time-challenge delay in momentums for administrator-level actions
+          (changing the administrator or the guardians).
+      softDelay:
+        type: integer
+        minimum: 0
+        description: >-
+          Time-challenge delay in momentums for the other challenged
+          actions (SetTokenTuple, SetAdditionalReward).
+    required: [guardians, guardiansVotes, administratorDelay, softDelay]
+
+  LiquidityTimeChallengeInfo:
+    type: object
+    description: >-
+      The state of one method's time challenge. A sensitive administrator
+      action must be submitted twice with identical parameters, separated
+      by the security delay (administrator or soft); the first call records
+      the parameters hash and the momentum height it was made at, and the
+      change takes effect on the matching second call. The field names are
+      capitalized because the underlying Go struct carries no json tags.
+    properties:
+      MethodName:
+        type: string
+        description: The protected method the challenge slot belongs to.
+      ParamsHash:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          Hash of the pending parameters; all-zero once the challenge has
+          been satisfied.
+      ChallengeStartHeight:
+        type: integer
+        minimum: 0
+        description: Momentum height of the first (recording) submission.
+    required: [MethodName, ParamsHash, ChallengeStartHeight]
+
+  LiquidityTimeChallengesList:
+    type: object
+    description: >-
+      The recorded time challenges of the liquidity contract's protected
+      administrator methods, as returned by
+      embedded.liquidity.getTimeChallengesInfo. count is the number of
+      entries in list; methods that have never been challenged are omitted.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+        description: Number of challenge entries in list.
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/LiquidityTimeChallengeInfo"
+    required: [count, list]
+
+methods:
+  - name: embedded.liquidity.getLiquidityInfo
+    summary: Returns the liquidity contract's global configuration state.
+    description: >-
+      Returns the liquidity contract's global state at the frontier
+      momentum: the administrator address, whether staking is halted, the
+      extra ZNN and QSR distributed each epoch from the contract's own
+      balance on top of the protocol liquidity emission, and the
+      whitelisted token tuples with their ZNN and QSR reward percentages
+      (basis points) and minimum stake amounts. Before the state is first
+      written it reads as defaults: the initial administrator from
+      vm/constants, not halted, zero extra rewards and no token tuples.
+    params: []
+    result:
+      name: liquidityInfo
+      schema:
+        $ref: "#/components/schemas/LiquidityInfo"
+      description: The contract's administrator, halt flag, extra rewards and token tuples.
+    examples:
+      - name: getLiquidityInfo
+        params: []
+        result:
+          name: liquidityInfo
+          value: {"administrator":"z1qr9vtwsfr2n0nsxl2nfh6l5esqjh2wfj85cfq9","isHalted":false,"znnReward":"0","qsrReward":"0","tokenTuples":[{"tokenStandard":"zts17d6yr02kh0r9qr566p7tg6","znnPercentage":10000,"qsrPercentage":10000,"minAmount":"1"}]}
+
+  - name: embedded.liquidity.getLiquidityStakeEntriesByAddress
+    summary: Returns one page of an address's active liquidity stake entries.
+    description: >-
+      Pages over the active (not yet revoked) liquidity stake entries of
+      address, read from contract state at the frontier momentum and sorted
+      by ascending expiration time (soonest-expiring first) with ties
+      broken by ascending entry id. Each entry carries the staked and
+      weighted amounts in the LP token's smallest units, unix-second
+      timestamps, and the entry id used to cancel it. totalAmount,
+      totalWeightedAmount and count sum every active entry of the address,
+      not just the returned page. A pageSize above 1024 is rejected with
+      ErrPageSizeParamTooBig.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: The staker address whose active entries to list.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of entries per page; must be at most 1024.
+    result:
+      name: liquidityStakeList
+      schema:
+        $ref: "#/components/schemas/LiquidityStakeList"
+      description: >-
+        One page of the address's active stake entries; the totals and
+        count cover all active entries, not just the page.
+    examples:
+      - name: stakeEntriesForStaker
+        params:
+          - name: address
+            value: "z1qp7jnnr7p3jrcn03n32k6tzj8k63pv8z7r9qx7"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 2
+        result:
+          name: liquidityStakeList
+          value: {"totalAmount":"974161957708995","totalWeightedAmount":"11645526753467940","count":20,"list":[{"amount":"49319022123537","tokenStandard":"zts17d6yr02kh0r9qr566p7tg6","weightedAmount":"591828265482444","startTime":1722037240,"revokeTime":0,"expirationTime":1753141240,"stakeAddress":"z1qp7jnnr7p3jrcn03n32k6tzj8k63pv8z7r9qx7","id":"5bb6eb2d310582629c366b0abde324e274bf43b4225f075c36a3acb9c93e39e1"},{"amount":"25000000000000","tokenStandard":"zts17d6yr02kh0r9qr566p7tg6","weightedAmount":"300000000000000","startTime":1725199940,"revokeTime":0,"expirationTime":1756303940,"stakeAddress":"z1qp7jnnr7p3jrcn03n32k6tzj8k63pv8z7r9qx7","id":"e6a0af8cfb2c8c7efc03ba844dbad42e8e57a8c4d7b49a233574d8ab02f2b53f"}]}
+      - name: stakeEntriesEmpty
+        params:
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 5
+        result:
+          name: liquidityStakeList
+          value: {"totalAmount":"0","totalWeightedAmount":"0","count":0,"list":[]}
+
+  - name: embedded.liquidity.getUncollectedReward
+    summary: Returns the liquidity rewards credited to an address but not yet collected.
+    description: >-
+      Returns the ZNN and QSR liquidity rewards credited to address but not
+      yet collected, read from contract state at the frontier momentum.
+      Liquidity rewards can include both ZNN and QSR. An address with
+      nothing to collect yields a deposit with both amounts 0, not an
+      error.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose uncollected rewards to query.
+    result:
+      name: rewardDeposit
+      schema:
+        $ref: "#/components/schemas/RewardDeposit"
+      description: Uncollected ZNN and QSR amounts; both 0 when nothing is collectable.
+    examples:
+      - name: getUncollectedReward
+        params:
+          - name: address
+            value: "z1qp7jnnr7p3jrcn03n32k6tzj8k63pv8z7r9qx7"
+        result:
+          name: rewardDeposit
+          value: {"address":"z1qp7jnnr7p3jrcn03n32k6tzj8k63pv8z7r9qx7","znnAmount":"31104985120","qsrAmount":"69232962040"}
+      - name: getUncollectedRewardNone
+        params:
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+        result:
+          name: rewardDeposit
+          value: {"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","znnAmount":"0","qsrAmount":"0"}
+
+  - name: embedded.liquidity.getFrontierRewardByPage
+    summary: Pages over the per-epoch liquidity reward history of an address, newest epoch first.
+    description: >-
+      Pages over the per-epoch liquidity reward history of address, newest
+      epoch first; epochs without a recorded reward yield zero-amount
+      entries. Page 0 starts at the last epoch the contract has processed
+      and each entry steps one epoch back; the page is cut short at epoch 0
+      (when no epoch has been processed yet the list is empty). A pageSize
+      above 1024 is rejected with ErrPageSizeParamTooBig. In the result,
+      count is the total number of epochs the contract has processed so far
+      (last processed epoch + 1), not the number of entries in list.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose reward history to page over.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number, counting backwards from the last processed epoch.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of epochs per page; must be at most 1024.
+    result:
+      name: rewardHistoryList
+      schema:
+        $ref: "#/components/schemas/RewardHistoryList"
+      description: >-
+        Reward entries in descending epoch order; count is the total number
+        of processed epochs.
+    examples:
+      - name: getFrontierRewardByPage
+        params:
+          - name: address
+            value: "z1qp7jnnr7p3jrcn03n32k6tzj8k63pv8z7r9qx7"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 3
+        result:
+          name: rewardHistoryList
+          value: {"count":1662,"list":[{"epoch":1661,"znnAmount":"3110498512","qsrAmount":"6923296204"},{"epoch":1660,"znnAmount":"3110498512","qsrAmount":"6923296204"},{"epoch":1659,"znnAmount":"3110498512","qsrAmount":"6923296204"}]}
+
+  - name: embedded.liquidity.getSecurityInfo
+    summary: Returns the time-challenge security configuration of the liquidity contract.
+    description: >-
+      Returns the security configuration of the liquidity contract at the
+      frontier momentum: the guardian addresses that can vote in a new
+      administrator during an emergency, each guardian's current vote, and
+      the two time-challenge delays in momentums (administratorDelay for
+      administrator and guardian changes, softDelay for the other protected
+      methods). Before security is initialized it reads as the minimum
+      delays from vm/constants with no guardians.
+    params: []
+    result:
+      name: securityInfo
+      schema:
+        $ref: "#/components/schemas/LiquiditySecurityInfo"
+      description: The guardians, their votes and the two time-challenge delays.
+    examples:
+      - name: getSecurityInfo
+        params: []
+        result:
+          name: securityInfo
+          value: {"guardians":["z1qphnq6jfaf82kmpyuuc88983ar66dmh7e59f67","z1qppk2p26xwwzu5w4zyzwknrx28whvjgy9ukc6h","z1qprccs7kjvx9q78m5v5ghwwfvxr6py8rtwcfrd","z1qpxswrfnlll355wrx868xh58j7e2gu2n2u5czv","z1qqcz0rmkz7f5442hjjr0thh2v6txu4875eyrkd","z1qqeyp02thdets4k245fnnjpk764ls65gwsy0cg","z1qr6k9c0z73c2zx22grhcw702slyz0gelt2uwvd","z1qr7urykpjth3w9lcl66atgvu5fc0ywawzha220","z1qrawthjzd95hcz73r3e5wd0xxzjmrt4vfqla0z","z1qrgh8w9q3xj5a2t2atnt3reqhh0akm4qae8ezk","z1qrztagl9rukq3ltdflnvg4zrvpfp84mydfejk9","z1qzjnnpmnqp6uqz2m9uet8l5e42ewwaty2mqcpy","z1qzup2zm6c9g68t085zjn5ycvdnr0u4pt0k4c80","z1qzymmtmfr3gxz3fr80cq94rgaefzkvst4e90lz"],"guardiansVotes":["z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f","z1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsggv2f"],"administratorDelay":17280,"softDelay":8640}
+
+  - name: embedded.liquidity.getTimeChallengesInfo
+    summary: Returns the recorded time challenges of the liquidity contract's protected methods.
+    description: >-
+      Returns the recorded time challenges for the liquidity contract's
+      protected administrator methods, in this fixed method order:
+      NominateGuardians, SetTokenTuple, ChangeAdministrator and
+      SetAdditionalReward. Methods that have never been challenged are
+      omitted from the list, and count is the number of entries returned.
+      A satisfied challenge keeps its slot with an all-zero parameters
+      hash.
+    params: []
+    result:
+      name: timeChallengesList
+      schema:
+        $ref: "#/components/schemas/LiquidityTimeChallengesList"
+      description: >-
+        The recorded challenge entries; count is the number of entries,
+        methods never challenged are omitted.
+    examples:
+      - name: getTimeChallengesInfo
+        params: []
+        result:
+          name: timeChallengesList
+          value: {"count":3,"list":[{"MethodName":"NominateGuardians","ParamsHash":"0000000000000000000000000000000000000000000000000000000000000000","ChallengeStartHeight":4348822},{"MethodName":"SetTokenTuple","ParamsHash":"0000000000000000000000000000000000000000000000000000000000000000","ChallengeStartHeight":4393510},{"MethodName":"SetAdditionalReward","ParamsHash":"0000000000000000000000000000000000000000000000000000000000000000","ChallengeStartHeight":5419840}]}

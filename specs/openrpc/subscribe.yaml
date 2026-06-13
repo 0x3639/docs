@@ -1,0 +1,360 @@
+# OpenRPC method fragments for the websocket pub/sub subscriptions of the
+# "ledger" JSON-RPC namespace.
+#
+# Source of truth: the package godoc and method signatures of the
+# subscribe.Api receiver in the pinned go-zenon source
+# (.build/go-zenon/rpc/api/subscribe/api.go and subscription.go), plus the
+# namespace registration in .build/go-zenon/rpc/apis.go and the wire
+# framing constants in .build/go-zenon/rpc/server/json.go.
+#
+# WIRE FRAMING (read this before the methods below). These are
+# go-ethereum-style streaming subscriptions, NOT plain request/response
+# HTTP calls, and they live under the "ledger" namespace, not a "subscribe"
+# namespace. apis.go registers subscribe.GetSubscribeApi() with
+# Namespace: "ledger" (the "ledgerSubscribe" module), so the exported
+# methods of subscribe.Api are NOT individually addressable method names.
+# Instead, a client opens a subscription with a single method call:
+#
+#   --> {"jsonrpc":"2.0","id":1,"method":"ledger.subscribe","params":["<name>", <args...>]}
+#
+# The first positional parameter is the subscription NAME -- the
+# lower-camel form of the subscribe.Api method to invoke
+# (momentums, allAccountBlocks, accountBlocksByAddress,
+# unreceivedAccountBlocksByAddress) -- followed by that subscription's own
+# arguments, if any (an address for the two by-address forms). The server
+# replies with a result containing a subscription id string:
+#
+#   <-- {"jsonrpc":"2.0","id":1,"result":"0x<subscriptionId>"}
+#
+# From then on every matching event is PUSHED to the client as a JSON-RPC
+# notification (a request without an id) whose method is
+# ledger.subscription and whose params object carries the subscription id
+# and the event payload:
+#
+#   <-- {"jsonrpc":"2.0","method":"ledger.subscription",
+#        "params":{"subscription":"0x<subscriptionId>","result":<payload>}}
+#
+# The client cancels with ledger.unsubscribe and the id, or by closing the
+# connection. (The ".subscribe", ".unsubscribe" and ".subscription"
+# suffixes are the framework constants in rpc/server/json.go.)
+#
+# TRANSPORT: these calls require a connection-oriented transport
+# (websocket or ipc). Over plain single-request HTTP the server reports
+# ErrNotificationsUnsupported, because notification support is disabled in
+# that mode. Every method below is marked x-transport: websocket to record
+# that it is websocket-only and is reached through ledger.subscribe rather
+# than as an HTTP method of its own.
+#
+# DELIVERY SEMANTICS: only events committed AFTER a subscription is
+# installed are streamed; there is no backfill of past events. The server's
+# internal fan-out uses bounded buffers and drops events (logging an error)
+# when a buffer is full, so delivery is best-effort under sustained load.
+#
+# METHOD NAMING in this fragment. Each method object is named for the
+# subscribe.Api method it wires up, prefixed "subscribe." to namespace this
+# fragment and match the playground cross-reference (apiMethods.js):
+# subscribe.toMomentums, subscribe.toAllAccountBlocks,
+# subscribe.toAccountBlocksByAddress,
+# subscribe.toUnreceivedAccountBlocksByAddress. These "subscribe.to*" names
+# are DOCUMENTATION labels, not wire method names -- see each method's
+# params and example for the real ledger.subscribe call and its first
+# parameter. (DISCREPANCY: the cross-reference implies a "subscribe"
+# namespace with toX method names; the code registers no such namespace and
+# no such methods. The actual wire contract is ledger.subscribe + a name
+# string, documented per method below.)
+#
+# EXAMPLES are REQUEST SHAPES only (websocket transport). A plain HTTP curl
+# cannot establish a streaming subscription, so the examples show the
+# ledger.subscribe request object a websocket client sends; each result
+# block shows the subscription-id reply shape. No pushed-notification
+# payload VALUES are captured or invented here -- the payload SHAPE of each
+# stream is described in the method and schema descriptions, derived from
+# the Go payload types in subscribe/api.go.
+#
+# Provenance: spec authored 2026-06-13 from the pinned go-zenon source; no
+# example values were captured from a live node and none were invented.
+schemas:
+  SubscribeMomentumNotification:
+    type: object
+    description: >-
+      One element of a pushed payload of the momentums subscription
+      (subscribe.toMomentums). It is the subscribe.Momentum Go type: the
+      hash and height of a momentum just inserted into the chain (a
+      momentum header reduced to its identity, NOT a full Momentum object).
+      Each ledger.subscription notification for this stream carries a
+      one-element array of these objects.
+    properties:
+      hash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the inserted momentum.
+      height:
+        type: integer
+        minimum: 0
+        description: Height of the inserted momentum.
+    required: [hash, height]
+
+  SubscribeAccountBlockNotification:
+    type: object
+    description: >-
+      One element of a pushed payload of the account-block subscriptions
+      (subscribe.toAllAccountBlocks, subscribe.toAccountBlocksByAddress and
+      subscribe.toUnreceivedAccountBlocksByAddress). It is the
+      subscribe.AccountBlock Go type: a trimmed-down view of a committed
+      account block (NOT the full AccountBlock object returned by the
+      ledger query methods). Each ledger.subscription notification for these
+      streams carries an array of these objects covering one momentum, with
+      descendant blocks generated by embedded contracts flattened into the
+      same array right after their parent.
+    properties:
+      blockType:
+        type: integer
+        minimum: 0
+        description: >-
+          Account block type; see the nom block-type constants. Send block
+          types populate toAddress; receive block types populate fromHash.
+      hash:
+        $ref: "#/components/schemas/Hash"
+        description: Hash of the committed block.
+      height:
+        type: integer
+        minimum: 0
+        description: Account-chain height of the block.
+      address:
+        $ref: "#/components/schemas/Address"
+        description: Address of the account chain the block belongs to.
+      toAddress:
+        $ref: "#/components/schemas/Address"
+        description: >-
+          Destination address of a send block. For the
+          unreceivedAccountBlocksByAddress stream this is the subscribed
+          address.
+      fromHash:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          Hash of the send block that a receive block accepts; the zero
+          hash for blocks that are not receives.
+    required: [blockType, hash, height, address, toAddress, fromHash]
+
+methods:
+  - name: subscribe.toMomentums
+    summary: Streams the hash and height of every momentum inserted into the chain.
+    x-transport: websocket
+    description: >-
+      Opens a websocket subscription that streams the identity (hash and
+      height) of every momentum inserted into the chain after the
+      subscription is installed.
+
+
+      Wire contract: invoked as ledger.subscribe with the first positional
+      parameter "momentums" and no further arguments. The call returns a
+      subscription id string; thereafter the server pushes a
+      ledger.subscription notification for each inserted momentum, whose
+      result is a one-element array of SubscribeMomentumNotification objects
+      (hash, height). This is a connection-oriented (websocket/ipc) call;
+      over plain HTTP it fails with ErrNotificationsUnsupported. There is no
+      backfill of momentums committed before the subscription.
+    params:
+      - name: subscriptionName
+        required: true
+        schema:
+          type: string
+          const: momentums
+        description: >-
+          The subscription name; the literal string "momentums" as the
+          first positional parameter of ledger.subscribe.
+    result:
+      name: subscriptionId
+      schema:
+        type: string
+      description: >-
+        The subscription id returned by the ledger.subscribe call.
+        Subsequent momentum events arrive as ledger.subscription
+        notifications, each carrying a one-element array of
+        SubscribeMomentumNotification objects; see the schema for that
+        pushed payload shape.
+    # Request-only example (websocket transport). Shows the ledger.subscribe
+    # request a client sends and the subscription-id reply shape. No pushed
+    # ledger.subscription payload values are captured or invented; the push
+    # payload shape is documented on SubscribeMomentumNotification.
+    examples:
+      - name: subscribeToMomentums
+        params:
+          - name: subscriptionName
+            value: momentums
+        result:
+          name: subscriptionId
+          value: "0x1"
+
+  - name: subscribe.toAllAccountBlocks
+    summary: Streams every account block committed to the chain.
+    x-transport: websocket
+    description: >-
+      Opens a websocket subscription that streams every account block
+      committed to the chain after the subscription is installed.
+
+
+      Wire contract: invoked as ledger.subscribe with the first positional
+      parameter "allAccountBlocks" and no further arguments. The call
+      returns a subscription id string; thereafter, for each momentum that
+      commits at least one account block, the server pushes a
+      ledger.subscription notification whose result is an array of
+      SubscribeAccountBlockNotification objects covering that momentum
+      (descendant blocks from embedded contracts included, flattened after
+      their parent). This is a connection-oriented (websocket/ipc) call;
+      over plain HTTP it fails with ErrNotificationsUnsupported. There is no
+      backfill of blocks committed before the subscription.
+    params:
+      - name: subscriptionName
+        required: true
+        schema:
+          type: string
+          const: allAccountBlocks
+        description: >-
+          The subscription name; the literal string "allAccountBlocks" as
+          the first positional parameter of ledger.subscribe.
+    result:
+      name: subscriptionId
+      schema:
+        type: string
+      description: >-
+        The subscription id returned by the ledger.subscribe call.
+        Subsequent account-block events arrive as ledger.subscription
+        notifications, each carrying an array of
+        SubscribeAccountBlockNotification objects for one momentum; see the
+        schema for that pushed payload shape.
+    # Request-only example (websocket transport). Shows the ledger.subscribe
+    # request a client sends and the subscription-id reply shape. No pushed
+    # ledger.subscription payload values are captured or invented; the push
+    # payload shape is documented on SubscribeAccountBlockNotification.
+    examples:
+      - name: subscribeToAllAccountBlocks
+        params:
+          - name: subscriptionName
+            value: allAccountBlocks
+        result:
+          name: subscriptionId
+          value: "0x1"
+
+  - name: subscribe.toAccountBlocksByAddress
+    summary: Streams the committed account blocks of a single account chain.
+    x-transport: websocket
+    description: >-
+      Opens a websocket subscription that streams the committed account
+      blocks whose address field equals the given address, i.e. the blocks
+      of a single account chain, as they are committed after the
+      subscription is installed.
+
+
+      Wire contract: invoked as ledger.subscribe with the first positional
+      parameter "accountBlocksByAddress" followed by the address. The call
+      returns a subscription id string; thereafter, for each momentum that
+      commits at least one matching block, the server pushes a
+      ledger.subscription notification whose result is an array of
+      SubscribeAccountBlockNotification objects (matching blocks of that
+      momentum); momentums with no matching block produce no notification.
+      This is a connection-oriented (websocket/ipc) call; over plain HTTP it
+      fails with ErrNotificationsUnsupported. There is no backfill of blocks
+      committed before the subscription.
+    params:
+      - name: subscriptionName
+        required: true
+        schema:
+          type: string
+          const: accountBlocksByAddress
+        description: >-
+          The subscription name; the literal string "accountBlocksByAddress"
+          as the first positional parameter of ledger.subscribe.
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: >-
+          Address whose account-chain blocks to stream; the second
+          positional parameter of ledger.subscribe.
+    result:
+      name: subscriptionId
+      schema:
+        type: string
+      description: >-
+        The subscription id returned by the ledger.subscribe call.
+        Subsequent matching account-block events arrive as
+        ledger.subscription notifications, each carrying an array of
+        SubscribeAccountBlockNotification objects for one momentum; see the
+        schema for that pushed payload shape.
+    # Request-only example (websocket transport). Shows the ledger.subscribe
+    # request a client sends and the subscription-id reply shape. No pushed
+    # ledger.subscription payload values are captured or invented; the push
+    # payload shape is documented on SubscribeAccountBlockNotification.
+    examples:
+      - name: subscribeToAccountBlocksByAddress
+        params:
+          - name: subscriptionName
+            value: accountBlocksByAddress
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+        result:
+          name: subscriptionId
+          value: "0x1"
+
+  - name: subscribe.toUnreceivedAccountBlocksByAddress
+    summary: Streams committed send blocks destined for a single address that it has not yet received.
+    x-transport: websocket
+    description: >-
+      Opens a websocket subscription that streams send blocks destined for
+      the given address (transfers the address has yet to receive) as they
+      are committed after the subscription is installed.
+
+
+      Wire contract: invoked as ledger.subscribe with the first positional
+      parameter "unreceivedAccountBlocksByAddress" followed by the address.
+      The call returns a subscription id string; thereafter, for each
+      momentum that commits at least one matching send block, the server
+      pushes a ledger.subscription notification whose result is an array of
+      SubscribeAccountBlockNotification objects (the matching sends of that
+      momentum, where toAddress equals the subscribed address). Only sends
+      committed after the subscription is installed are streamed; transfers
+      already pending must be fetched with
+      ledger.getUnreceivedBlocksByAddress. This is a connection-oriented
+      (websocket/ipc) call; over plain HTTP it fails with
+      ErrNotificationsUnsupported.
+    params:
+      - name: subscriptionName
+        required: true
+        schema:
+          type: string
+          const: unreceivedAccountBlocksByAddress
+        description: >-
+          The subscription name; the literal string
+          "unreceivedAccountBlocksByAddress" as the first positional
+          parameter of ledger.subscribe.
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: >-
+          Destination address whose incoming unreceived send blocks to
+          stream; the second positional parameter of ledger.subscribe.
+    result:
+      name: subscriptionId
+      schema:
+        type: string
+      description: >-
+        The subscription id returned by the ledger.subscribe call.
+        Subsequent matching send-block events arrive as ledger.subscription
+        notifications, each carrying an array of
+        SubscribeAccountBlockNotification objects for one momentum; see the
+        schema for that pushed payload shape.
+    # Request-only example (websocket transport). Shows the ledger.subscribe
+    # request a client sends and the subscription-id reply shape. No pushed
+    # ledger.subscription payload values are captured or invented; the push
+    # payload shape is documented on SubscribeAccountBlockNotification.
+    examples:
+      - name: subscribeToUnreceivedAccountBlocksByAddress
+        params:
+          - name: subscriptionName
+            value: unreceivedAccountBlocksByAddress
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+        result:
+          name: subscriptionId
+          value: "0x1"

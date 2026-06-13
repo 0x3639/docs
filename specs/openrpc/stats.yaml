@@ -1,0 +1,280 @@
+# OpenRPC method fragments for the "stats" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of StatsApi in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/stats.go), together with the
+# protocol.SyncInfo / SyncState types it returns
+# (.build/go-zenon/protocol/interfaces.go). Every exported method is served
+# as stats.<method>, with the exact wire name taken from each method's
+# "JSON-RPC:" godoc line.
+#
+# Unlike the ledger and embedded namespaces, these methods read node-local
+# OS, process, runtime and network state rather than chain state: host
+# operating system and memory, Go runtime goroutine count, build version
+# and git commit, connected p2p peers, and momentum sync progress. The
+# returned values are therefore environment-specific and describe the
+# particular node that served the request; they are not deterministic
+# chain data. None of these methods take parameters.
+#
+# Memory figures (OsInfoResponse.memoryTotal / memoryFree) are byte counts
+# reported by the host OS. Heights (SyncInfo.currentHeight / targetHeight)
+# are uint64 momentum-chain heights.
+#
+# CROSS-REFERENCE DISCREPANCY: src/data/apiMethods.js lists a fifth method
+# "stats.runtimeInfo". No such method exists in the pinned StatsApi source,
+# and the live node rejects it with JSON-RPC error -32601 ("the method
+# stats.runtimeInfo does not exist/is not available"). It is therefore not
+# documented here. The goroutine count that name might suggest is reported
+# by stats.osInfo (numGoroutine).
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. The values describe that public node and are inherently
+# point-in-time. The stats.networkInfo example trims its peers array to the
+# first three real entries for readability; the live response listed all 62
+# connected peers (numPeers: 62).
+schemas:
+  StatsOsInfo:
+    type: object
+    description: >-
+      Host operating system, memory and CPU details together with the
+      node's current goroutine count, as returned by stats.osInfo. Failures
+      while querying the OS are not surfaced: the affected fields are left
+      at their zero values and no error is returned.
+    properties:
+      os:
+        type: string
+        description: >-
+          Host operating system as reported by the OS itself, for example
+          "linux".
+      platform:
+        type: string
+        description: Host platform, for example "ubuntu".
+      platformFamily:
+        type: string
+        description: Host platform family, for example "debian".
+      platformVersion:
+        type: string
+        description: Host platform version, for example "24.04".
+      kernelVersion:
+        type: string
+        description: Host kernel version, for example "6.8.0-90-generic".
+      memoryTotal:
+        type: integer
+        minimum: 0
+        description: The host's total physical memory in bytes.
+      memoryFree:
+        type: integer
+        minimum: 0
+        description: >-
+          Memory in bytes available for allocation without swapping (the OS
+          "available" figure, which includes reclaimable caches, not
+          strictly free memory).
+      numCPU:
+        type: integer
+        minimum: 0
+        description: Number of logical CPUs usable by the node process.
+      numGoroutine:
+        type: integer
+        minimum: 0
+        description: >-
+          Number of goroutines currently running in the node process.
+    required:
+      - os
+      - platform
+      - platformFamily
+      - platformVersion
+      - kernelVersion
+      - memoryTotal
+      - memoryFree
+      - numCPU
+      - numGoroutine
+
+  StatsProcessInfo:
+    type: object
+    description: >-
+      Identifies the node build serving the RPC, as returned by
+      stats.processInfo. Both fields are fixed at build time.
+    properties:
+      version:
+        type: string
+        description: >-
+          Release version compiled into the binary, for example "v0.0.8";
+          shared-library (libznn) builds carry a "-libznn" suffix.
+      commit:
+        type: string
+        description: >-
+          Git revision the binary was built from, or an empty string when
+          the build carries no VCS information.
+    required:
+      - version
+      - commit
+
+  StatsPeer:
+    type: object
+    description: >-
+      One node on the p2p network as seen by stats.networkInfo, used both
+      for connected peers and for the local node's self entry.
+    properties:
+      publicKey:
+        type: string
+        pattern: "^[0-9a-f]{128}$"
+        description: >-
+          The peer's discovery node id: its 512-bit public key, hex-encoded
+          without a 0x prefix.
+      ip:
+        type: string
+        description: >-
+          The peer's remote IP address as observed on the live connection.
+          For the self entry it is the fixed placeholder "127.0.0.1".
+      name:
+        type: string
+        description: >-
+          The node name the peer advertised during the protocol handshake,
+          for example "v0.0.8 znn-node". For the self entry it is the fixed
+          placeholder "*self*".
+    required:
+      - publicKey
+      - ip
+      - name
+
+  StatsNetworkInfo:
+    type: object
+    description: >-
+      The node's current view of the p2p network, as returned by
+      stats.networkInfo.
+    properties:
+      numPeers:
+        type: integer
+        minimum: 0
+        description: >-
+          Number of connected peers. It is sampled separately from peers,
+          so it can momentarily differ from the length of that list.
+      peers:
+        type: array
+        description: The currently connected peers.
+        items:
+          $ref: "#/components/schemas/StatsPeer"
+      self:
+        $ref: "#/components/schemas/StatsPeer"
+        description: >-
+          The local node. Only its publicKey is real; ip and name hold the
+          fixed placeholders "127.0.0.1" and "*self*".
+    required:
+      - numPeers
+      - peers
+      - self
+
+  StatsSyncInfo:
+    type: object
+    description: >-
+      Snapshot of the node's momentum synchronisation progress, as returned
+      by stats.syncInfo (protocol.SyncInfo).
+    properties:
+      state:
+        type: integer
+        enum: [0, 1, 2, 3]
+        description: >-
+          Sync state. 1 (Syncing) while currentHeight is behind
+          targetHeight; 2 (SyncDone) once it has caught up; 3
+          (NotEnoughPeers) — overriding both — when fewer peers are
+          connected than the node's configured minimum. 0 (Unknown) is the
+          zero value and is never reported.
+      currentHeight:
+        type: integer
+        minimum: 0
+        description: The local frontier momentum height.
+      targetHeight:
+        type: integer
+        minimum: 0
+        description: >-
+          The frontier momentum height advertised by the best-known peer; 0
+          when no peers are connected.
+    required:
+      - state
+      - currentHeight
+      - targetHeight
+
+methods:
+  - name: stats.osInfo
+    summary: Returns the host's operating system, memory and CPU details with the node's goroutine count.
+    description: >-
+      Reports the host operating system identification, total and available
+      memory, logical CPU count and the node process's current goroutine
+      count. The values describe the machine the queried node runs on and
+      are environment-specific. Errors while querying the OS are not
+      surfaced: any field that could not be read is left at its zero value
+      and the call still succeeds.
+    params: []
+    result:
+      name: osInfo
+      schema:
+        $ref: "#/components/schemas/StatsOsInfo"
+      description: Host OS, memory and CPU details plus the node's goroutine count.
+    examples:
+      - name: osInfo
+        params: []
+        result:
+          name: osInfo
+          value: {"os":"linux","platform":"ubuntu","platformFamily":"debian","platformVersion":"24.04","kernelVersion":"6.8.0-90-generic","memoryTotal":33654800384,"memoryFree":30732177408,"numCPU":8,"numGoroutine":325}
+
+  - name: stats.processInfo
+    summary: Returns the version and git commit of the running node binary.
+    description: >-
+      Returns the release version and git commit of the running node
+      binary, both fixed at build time. The values identify the specific
+      build serving the request.
+    params: []
+    result:
+      name: processInfo
+      schema:
+        $ref: "#/components/schemas/StatsProcessInfo"
+      description: The node binary's build version and git commit.
+    examples:
+      - name: processInfo
+        params: []
+        result:
+          name: processInfo
+          value: {"version":"v0.0.8","commit":"9cde165877a1e4ff47d0df6cf8b8a65b121d550c"}
+
+  - name: stats.networkInfo
+    summary: Returns the peers the node is currently connected to and its own network identity.
+    description: >-
+      Reports the node's current view of the p2p network: the count of
+      connected peers, the list of those peers (each with its discovery node
+      id, observed IP and advertised name), and the local node's own
+      identity in a self entry whose publicKey is real but whose ip and name
+      are fixed placeholders. The peer set is specific to the queried node
+      and changes over time.
+    params: []
+    result:
+      name: networkInfo
+      schema:
+        $ref: "#/components/schemas/StatsNetworkInfo"
+      description: Connected peers and the local node's network identity.
+    examples:
+      - name: networkInfo
+        params: []
+        result:
+          name: networkInfo
+          value: {"numPeers":62,"peers":[{"publicKey":"916aa48165071bf1e86bc4bca272c86e092e981d210b3d7a29b099bdbda1aec362f7e085e603c3ae6a25833b44000519658e8aaa72c9ad13477a2a548ebb62ad","ip":"167.99.47.146","name":"v0.0.8 znn-node"},{"publicKey":"c5516934046984c4c9da51c92868699017613749999b3aa99c331503fdc8f9ed23f6b00bd22a2e4b830979a103a58fcebd0a95f92ee451df4a4b0f35a423d0d8","ip":"10.10.169.23","name":"v0.0.8 znn-node"},{"publicKey":"e2311173bb2d03ddcb87dc25491bc8953fc1a1e50ee6094346466458e06b478bce5e3ef2b4f7468b10bc85781f8e1e57cec56d460eee7bebf89a11f64e3b1c60","ip":"10.10.169.1","name":"v0.0.8 znn-node"}],"self":{"publicKey":"ba443247d6271a3b1c6de656f8a248a2ffda749239ecdbd4aa7c1d95b318c4e67876714694d23b3298433083d5b3885669df4624e1c1aabdae29c4ab47e42602","ip":"127.0.0.1","name":"*self*"}}
+
+  - name: stats.syncInfo
+    summary: Returns the node's momentum synchronisation progress.
+    description: >-
+      Reports the node's momentum sync progress: the local frontier height,
+      the frontier height advertised by the best-known peer, and a numeric
+      state that distinguishes still-syncing, caught-up, and
+      not-enough-peers conditions. The values are specific to the queried
+      node's current connectivity.
+    params: []
+    result:
+      name: syncInfo
+      schema:
+        $ref: "#/components/schemas/StatsSyncInfo"
+      description: Current and target momentum heights with the sync state.
+    examples:
+      - name: syncInfo
+        params: []
+        result:
+          name: syncInfo
+          value: {"state":2,"currentHeight":13492469,"targetHeight":13492469}

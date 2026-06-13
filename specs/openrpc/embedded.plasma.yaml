@@ -1,0 +1,248 @@
+# OpenRPC fragments for the "embedded.plasma" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of PlasmaApi in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/embedded/plasma.go). The namespace
+# reads plasma state derived from fused QSR as of the frontier momentum:
+# per-address plasma totals, the fusion entries held in the plasma embedded
+# contract, and the proof-of-work difficulty needed when fused plasma does
+# not cover a prospective account block. Plasma values are unsigned integers
+# in plasma units; QSR amounts are in the smallest unit (10^8 per QSR) and,
+# because the underlying values are big.Int, are rendered as base-10 JSON
+# strings. Every exported method is served as embedded.plasma.<method>.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. List examples were requested with small page sizes to stay
+# readable.
+schemas:
+  PlasmaInfo:
+    type: object
+    description: >-
+      Summarizes an address's plasma at the frontier momentum, as reported
+      by embedded.plasma.get.
+    properties:
+      currentPlasma:
+        type: integer
+        minimum: 0
+        description: >-
+          Plasma currently available to the address: maxPlasma minus the
+          plasma already held by the address's unconfirmed account blocks.
+      maxPlasma:
+        type: integer
+        minimum: 0
+        description: Plasma that the total fused QSR (qsrAmount) converts to.
+      qsrAmount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Total QSR fused with this address as beneficiary, in the smallest
+          unit (10^8 per QSR).
+    required: [currentPlasma, maxPlasma, qsrAmount]
+
+  FusionEntry:
+    type: object
+    description: >-
+      One QSR fusion recorded in the plasma contract.
+    properties:
+      qsrAmount:
+        $ref: "#/components/schemas/Amount"
+        description: Fused QSR amount, in the smallest unit (10^8 per QSR).
+      beneficiary:
+        $ref: "#/components/schemas/Address"
+        description: Address whose plasma this fusion backs.
+      expirationHeight:
+        type: integer
+        minimum: 0
+        description: >-
+          Momentum height starting at which the owner may cancel the fusion
+          and reclaim the QSR.
+      id:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          Entry id: the hash of the send block that created the fusion.
+    required: [qsrAmount, beneficiary, expirationHeight, id]
+
+  FusionEntryList:
+    type: object
+    description: >-
+      One page of an owner's fusion entries, returned by
+      embedded.plasma.getEntriesByAddress. qsrAmount and count cover all of
+      the owner's entries, not just the page.
+    properties:
+      qsrAmount:
+        $ref: "#/components/schemas/Amount"
+        description: >-
+          Total QSR the owner has fused across all entries, in the smallest
+          unit (10^8 per QSR).
+      count:
+        type: integer
+        minimum: 0
+        description: Total number of fusion entries owned by the address.
+      list:
+        type: array
+        description: >-
+          The page of entries, sorted by ascending expiration height with
+          ties broken by ascending beneficiary address.
+        items:
+          $ref: "#/components/schemas/FusionEntry"
+    required: [qsrAmount, count, list]
+
+  GetRequiredParam:
+    type: object
+    description: >-
+      Describes the prospective account block passed to
+      embedded.plasma.getRequiredPoWForAccountBlock. Sent as a single
+      positional object parameter.
+    properties:
+      address:
+        $ref: "#/components/schemas/Address"
+        description: The sending (self) address of the block.
+      blockType:
+        type: integer
+        description: >-
+          Account block type: 2 (user send) or 3 (user receive); see the
+          nom block-type constants. toAddress is required for a user-send
+          block.
+      toAddress:
+        oneOf:
+          - $ref: "#/components/schemas/Address"
+          - type: "null"
+        description: >-
+          Destination address. Required for a user-send block (blockType 2);
+          may be null for a receive block.
+      data:
+        oneOf:
+          - $ref: "#/components/schemas/Base64Bytes"
+          - type: "null"
+        description: >-
+          Optional data payload; its length raises the plasma requirement of
+          send blocks. May be null.
+    required: [address, blockType]
+
+  GetRequiredResult:
+    type: object
+    description: >-
+      The answer of embedded.plasma.getRequiredPoWForAccountBlock.
+    properties:
+      availablePlasma:
+        type: integer
+        minimum: 0
+        description: Plasma currently available to the address from fused QSR.
+      basePlasma:
+        type: integer
+        minimum: 0
+        description: Minimum plasma the described block requires.
+      requiredDifficulty:
+        type: integer
+        minimum: 0
+        description: >-
+          Proof-of-work difficulty that would cover the shortfall
+          (basePlasma minus availablePlasma); 0 when available plasma already
+          suffices. The difficulty is proportional to the missing plasma
+          (1500 per unit).
+    required: [availablePlasma, basePlasma, requiredDifficulty]
+
+methods:
+  - name: embedded.plasma.get
+    summary: Returns an address's plasma at the frontier momentum.
+    description: >-
+      Returns the plasma of address at the frontier momentum: the total QSR
+      fused with it as beneficiary, the plasma that amount converts to, and
+      the plasma currently available once the plasma held by the address's
+      unconfirmed account blocks is subtracted.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Address whose plasma to query.
+    result:
+      name: plasmaInfo
+      schema:
+        $ref: "#/components/schemas/PlasmaInfo"
+      description: The address's plasma totals at the frontier momentum.
+    examples:
+      - name: plasmaForFusedAddress
+        params:
+          - name: address
+            value: "z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79"
+        result:
+          name: plasmaInfo
+          value: {"currentPlasma":315000,"maxPlasma":315000,"qsrAmount":"15000000000"}
+
+  - name: embedded.plasma.getEntriesByAddress
+    summary: Returns one page of the fusion entries owned by an address.
+    description: >-
+      Returns one page of the fusion entries owned by address (the address
+      that sent the fuse transactions, not the beneficiary), read from plasma
+      contract state at the frontier momentum and sorted by ascending
+      expiration height with ties broken by beneficiary. qsrAmount and count
+      in the result cover all of the owner's entries. A pageSize above 1024
+      is rejected with ErrPageSizeParamTooBig.
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+        description: Owner address whose fusion entries to list.
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of entries per page; must be at most 1024.
+    result:
+      name: fusionEntryList
+      schema:
+        $ref: "#/components/schemas/FusionEntryList"
+      description: >-
+        One page of the owner's fusion entries; qsrAmount and count cover all
+        of the owner's entries, not just the page.
+    examples:
+      - name: fusionEntriesForOwner
+        params:
+          - name: address
+            value: "z1qzzavvq2zywv77ts2e9yntc3y24qetjh0x0aj4"
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 5
+        result:
+          name: fusionEntryList
+          value: {"qsrAmount":"20000000000","count":2,"list":[{"qsrAmount":"10000000000","beneficiary":"z1qqwvuj03fucl7usz6awd9nlj300ajmcx9qufkt","expirationHeight":13218371,"id":"3396d16cee8daf82f7533959b7959124ea66c16ad23ce92359bcfc30df1ff14d"},{"qsrAmount":"10000000000","beneficiary":"z1qr46jhwr6rzws2wwatghwt3dl6mvr3spcm6ye7","expirationHeight":13218378,"id":"10d5b9d45542f245ba5df3492e816c3cf55c8691dc98d5d45253c368dee081ab"}]}
+
+  - name: embedded.plasma.getRequiredPoWForAccountBlock
+    summary: Computes the proof-of-work difficulty a prospective account block needs beyond its available fused plasma.
+    description: >-
+      Computes, against the frontier momentum, how much proof of work the
+      described account block would need on top of the address's available
+      fused plasma. The base plasma is the block's minimum requirement (a
+      flat base for receive blocks; a base plus a per-byte data charge for
+      sends to user addresses; the called method's fixed cost for sends to
+      embedded contracts). When available plasma covers it the required
+      difficulty is 0; otherwise the difficulty is proportional to the
+      missing plasma (1500 per unit), and a shortfall beyond what proof of
+      work may cover for one block is rejected with an error. A user-send
+      block without a destination address is rejected.
+    params:
+      - name: param
+        required: true
+        schema:
+          $ref: "#/components/schemas/GetRequiredParam"
+        description: The prospective account block, as a single object parameter.
+    result:
+      name: getRequiredResult
+      schema:
+        $ref: "#/components/schemas/GetRequiredResult"
+      description: Available plasma, base plasma, and required PoW difficulty.
+    examples:
+      - name: sendCoveredByPlasma
+        params:
+          - name: param
+            value: {"address":"z1qq3zqckgywkwma0pafsq2cndl7anx23v099k79","blockType":2,"toAddress":"z1qzal6c5s9rjnnxd2z7dvdhjxpmmj4fmw56a0mz","data":null}
+        result:
+          name: getRequiredResult
+          value: {"availablePlasma":315000,"basePlasma":21000,"requiredDifficulty":0}

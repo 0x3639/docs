@@ -1,0 +1,172 @@
+# OpenRPC fragments for the "embedded.swap" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of SwapApi in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/embedded/swap.go) and the wire
+# struct json tags in vm/embedded/definition (swap.go, SwapAssets). The
+# namespace reads the legacy-network migration state seeded at Alphanet
+# genesis: the ZNN and QSR balances still claimable through the swap
+# embedded contract's RetrieveAssets method, keyed by the hash of the
+# owning legacy key, and the legacy pillar registrations redeemable
+# through the pillar contract. Each key id hash is the hex form of the
+# SHA-256 of the legacy key id (itself the RIPEMD-160 of the SHA-256 of
+# the compressed secp256k1 public key). Unclaimed balances decay with
+# the epoch: they stay whole for the first 90 epochs after genesis, then
+# lose 10% of the original amount per further 30 epochs until nothing is
+# left; the stored amounts never change in place, the decay is applied at
+# read time for the current epoch. Token amounts are in the smallest unit
+# (10^8 per ZNN or QSR) and, because the underlying values are big.Int,
+# are rendered as base-10 JSON strings. Every exported method is served
+# as embedded.swap.<lowerCamelMethodName>.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. By this date the swap window has long closed: every stored
+# balance has fully decayed and reads back as zero, so the example
+# amounts are "0". The embedded.swap.getAssets example trims the live
+# response (5002 key/value entries) to its first two real entries for
+# readability; the trimmed values are reproduced unchanged.
+schemas:
+  SwapAssetEntry:
+    type: object
+    description: >-
+      The swap balance still claimable by one legacy key, as returned by
+      embedded.swap.getAssetsByKeyIdHash, with the decay for the current
+      epoch already applied.
+    properties:
+      keyIdHash:
+        type: string
+        description: >-
+          Hex form of the SHA-256 hash of the legacy key id that owns the
+          balance; echoes the requested hash.
+      znn:
+        $ref: "#/components/schemas/Amount"
+        description: Claimable ZNN after decay, in smallest units, as a base-10 string.
+      qsr:
+        $ref: "#/components/schemas/Amount"
+        description: Claimable QSR after decay, in smallest units, as a base-10 string.
+    required: [keyIdHash, znn, qsr]
+
+  SwapAssetEntrySimple:
+    type: object
+    description: >-
+      The swap balance of one legacy key without its key id hash, used as
+      the value type of the embedded.swap.getAssets map (where the hash is
+      already the key). Amounts have the decay for the current epoch
+      applied.
+    properties:
+      znn:
+        $ref: "#/components/schemas/Amount"
+        description: Claimable ZNN after decay, in smallest units, as a base-10 string.
+      qsr:
+        $ref: "#/components/schemas/Amount"
+        description: Claimable QSR after decay, in smallest units, as a base-10 string.
+    required: [znn, qsr]
+
+  SwapAssetMap:
+    type: object
+    description: >-
+      The full set of remaining swap balances returned by
+      embedded.swap.getAssets, as a JSON object keyed by key id hash (a hex
+      string) rather than a paged list. Every stored entry is present,
+      including already-claimed or fully-decayed ones, which read back with
+      zero amounts.
+    additionalProperties:
+      $ref: "#/components/schemas/SwapAssetEntrySimple"
+
+  SwapLegacyPillarEntry:
+    type: object
+    description: >-
+      One legacy key's unredeemed legacy pillar slots, as returned by
+      embedded.swap.getLegacyPillars. Read from the pillar contract's
+      state, not the swap contract's.
+    properties:
+      keyIdHash:
+        type: string
+        description: Hex form of the SHA-256 hash of the legacy key id that owns the slots.
+      numPillars:
+        type: integer
+        minimum: 0
+        description: Number of legacy pillars the key may still redeem.
+    required: [keyIdHash, numPillars]
+
+methods:
+  - name: embedded.swap.getAssetsByKeyIdHash
+    summary: Returns the swap balance still claimable by one legacy key.
+    description: >-
+      Returns the ZNN and QSR still claimable by the legacy key whose key
+      id hash is keyIdHash, read from swap contract state at the frontier
+      momentum with the decay for the current epoch applied. The returned
+      keyIdHash echoes the request. A hash with no swap entry yields zero
+      amounts, not an error; an already-claimed entry likewise reads back
+      with zero amounts.
+    params:
+      - name: keyIdHash
+        required: true
+        schema:
+          $ref: "#/components/schemas/Hash"
+        description: >-
+          Hex SHA-256 hash of the legacy key id whose balance to query, as
+          used for the keys of embedded.swap.getAssets.
+    result:
+      name: swapAssetEntry
+      schema:
+        $ref: "#/components/schemas/SwapAssetEntry"
+      description: >-
+        The key's claimable ZNN and QSR after decay; zero amounts when no
+        entry exists or it has already been claimed.
+    examples:
+      - name: getAssetsByKeyIdHash
+        params:
+          - name: keyIdHash
+            value: "00218c7ccd0935c0a5eee11c8e1f8d276b7d1d72b8cb67974fb206155a75a8c8"
+        result:
+          name: swapAssetEntry
+          value: {"keyIdHash":"00218c7ccd0935c0a5eee11c8e1f8d276b7d1d72b8cb67974fb206155a75a8c8","znn":"0","qsr":"0"}
+
+  - name: embedded.swap.getAssets
+    summary: Returns every remaining swap balance, keyed by legacy key id hash.
+    description: >-
+      Returns every remaining swap balance, read from swap contract state
+      at the frontier momentum with the decay for the current epoch applied
+      to each entry. The result is a JSON object keyed by key id hash (a hex
+      string), not a paged list, and includes already-claimed and
+      fully-decayed entries, which read back with zero amounts. It takes no
+      parameters.
+    params: []
+    result:
+      name: swapAssetMap
+      schema:
+        $ref: "#/components/schemas/SwapAssetMap"
+      description: >-
+        All swap balances as an object keyed by key id hash; each value
+        holds the claimable ZNN and QSR after decay.
+    examples:
+      - name: getAssets
+        params: []
+        result:
+          name: swapAssetMap
+          value: {"0000000000000000000000000000000000000000000000000000000000000000":{"znn":"0","qsr":"0"},"00218c7ccd0935c0a5eee11c8e1f8d276b7d1d72b8cb67974fb206155a75a8c8":{"znn":"0","qsr":"0"}}
+
+  - name: embedded.swap.getLegacyPillars
+    summary: Returns the unredeemed legacy pillar slots, one entry per legacy key.
+    description: >-
+      Returns the legacy pillar slots not yet redeemed, one entry per
+      legacy key, read from the pillar contract's state (not the swap
+      contract's) at the frontier momentum, in storage (key id hash) order.
+      It takes no parameters and returns an empty array when none remain.
+    params: []
+    result:
+      name: swapLegacyPillarList
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/SwapLegacyPillarEntry"
+      description: >-
+        Unredeemed legacy pillar entries in key-id-hash order; empty when
+        none remain.
+    examples:
+      - name: getLegacyPillars
+        params: []
+        result:
+          name: swapLegacyPillarList
+          value: [{"keyIdHash":"01e209fc055989dbcc2b31f28aac892a0d1f4dd3f6dfb5921835537d0e11fbb1","numPillars":1},{"keyIdHash":"101c59e7e59e1a3febcb7e2d00c0115eee6d927fc323e64dcc651cf925038782","numPillars":1}]

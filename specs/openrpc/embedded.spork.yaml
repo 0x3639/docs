@@ -1,0 +1,106 @@
+# OpenRPC fragments for the "embedded.spork" JSON-RPC namespace.
+#
+# Source of truth: godoc comments and signatures of SporkApi in the pinned
+# go-zenon source (.build/go-zenon/rpc/api/embedded/spork.go) and the Spork
+# wire struct json tags in vm/embedded/definition/spork.go. The namespace
+# reads the protocol-upgrade records stored in the spork embedded contract
+# as of the frontier momentum. A spork is a gated protocol-upgrade switch:
+# it is created and later activated only by send blocks from the spork
+# address (or, between momentum heights 10109240 and 13243712, the community
+# spork address). A spork's id is the hash of the CreateSpork send block;
+# activation sets activated and an enforcementHeight equal to the activation
+# momentum's height plus a fixed delay, after which the gated feature
+# applies. Every exported method is served as embedded.spork.<method>.
+#
+# Examples were captured live from a public mainnet node
+# (https://my.hc1node.com:35997) on 2026-06-13; no example values are
+# invented. The list example was requested with a small page size to stay
+# readable.
+schemas:
+  SporkInfo:
+    type: object
+    description: >-
+      One stored protocol-upgrade switch, as reported by
+      embedded.spork.getAll. activated and enforcementHeight stay false and
+      0 until the spork is activated.
+    properties:
+      id:
+        $ref: "#/components/schemas/Hash"
+        description: >-
+          The spork id: the hash of the send block that created the spork.
+      name:
+        type: string
+        description: The spork's registered name.
+      description:
+        type: string
+        description: The spork's registered description.
+      activated:
+        type: boolean
+        description: >-
+          Whether the spork has been activated. Once activated, the gated
+          feature applies from enforcementHeight onward.
+      enforcementHeight:
+        type: integer
+        minimum: 0
+        description: >-
+          Momentum height from which the activated feature applies: the
+          frontier height at activation plus a fixed delay. 0 while the
+          spork is not activated.
+    required: [id, name, description, activated, enforcementHeight]
+
+  SporkInfoList:
+    type: object
+    description: >-
+      One page of sporks as returned by embedded.spork.getAll. count is the
+      total number of sporks ever created, not the number of entries in
+      list.
+    properties:
+      count:
+        type: integer
+        minimum: 0
+        description: Total number of sporks ever created.
+      list:
+        type: array
+        items:
+          $ref: "#/components/schemas/SporkInfo"
+        description: >-
+          The requested page, in storage (spork id byte) order.
+    required: [count, list]
+
+methods:
+  - name: embedded.spork.getAll
+    summary: Returns one page of every spork ever created, in storage order.
+    description: >-
+      Returns one page of every spork ever created, activated or not, read
+      from spork contract state at the frontier momentum in storage (spork
+      id byte) order. count is the total number of sporks ever created, not
+      the number of entries in list. A pageSize above 1024 is rejected with
+      ErrPageSizeParamTooBig.
+    params:
+      - name: pageIndex
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageIndex"
+        description: 0-based page number.
+      - name: pageSize
+        required: true
+        schema:
+          $ref: "#/components/schemas/PageSize"
+        description: Number of sporks per page; must be at most 1024.
+    result:
+      name: sporkInfoList
+      schema:
+        $ref: "#/components/schemas/SporkInfoList"
+      description: >-
+        One page of sporks in storage (spork id byte) order; count is the
+        total number of sporks ever created.
+    examples:
+      - name: getAll
+        params:
+          - name: pageIndex
+            value: 0
+          - name: pageSize
+            value: 5
+        result:
+          name: sporkInfoList
+          value: {"count":6,"list":[{"id":"3dce423d7bc10d2409e598e33811c9c9e79eff178f94adc571aeef30e8bc9b1d","name":"Governance Contract","description":"The Fork Era II","activated":false,"enforcementHeight":0},{"id":"6d2b1e6cb4025f2f45533f0fe22e9b7ce2014d91cc960471045fa64eee5a6ba3","name":"AcceleratorZ","description":"Acta non verba","activated":true,"enforcementHeight":1241273},{"id":"97f0a9636a5cc633dfa3814e431f19c1974536eef3d1ebb713db50464dc5e750","name":"AcceleratorZ","description":"Acta non verba","activated":false,"enforcementHeight":0},{"id":"ceb7e3808ef17ea910adda2f3ab547be4cdfb54de8400ce3683258d06be1354b","name":"Hashed Timelock Contract","description":"Hyperspace Program Atomic Swaps","activated":true,"enforcementHeight":4188199},{"id":"ddd43466769461c5b5d109c639da0f50a7eeb96ad6e7274b1928a35c431d7b1b","name":"Multiverse","description":"Hyperspace Program Cross-chain Bridge","activated":true,"enforcementHeight":4188207}]}
