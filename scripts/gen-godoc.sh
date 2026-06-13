@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 grep -qE '^ref=[0-9a-f]{40}$' PINNED_GO_ZENON || { echo "FATAL: malformed PINNED_GO_ZENON" >&2; exit 2; }
 eval "$(sed 's/^/PIN_/' PINNED_GO_ZENON)"
 GOMARKDOC_VERSION=v1.1.0
-PACKAGES=(rpc/api rpc/api/embedded rpc/api/subscribe common common/types common/db common/crypto chain chain/nom chain/store chain/momentum chain/account chain/account/mailbox chain/genesis vm vm/vm_context vm/abi vm/constants vm/embedded/definition vm/embedded vm/embedded/implementation consensus consensus/api consensus/storage)
+PACKAGES=(rpc/api rpc/api/embedded rpc/api/subscribe common common/types common/db common/crypto chain chain/nom chain/store chain/momentum chain/account chain/account/mailbox chain/genesis vm vm/vm_context vm/abi vm/constants vm/embedded/definition vm/embedded vm/embedded/implementation consensus consensus/api consensus/storage protocol protocol/downloader p2p p2p/discover p2p/nat)
 
 GOBIN="$PWD/.build/bin" go install "github.com/princjef/gomarkdoc/cmd/gomarkdoc@${GOMARKDOC_VERSION}"
 OUT="$PWD/docs/reference/packages"
