@@ -18,7 +18,9 @@ import (
 
 	"github.com/zenon-network/go-zenon/chain/nom"
 	"github.com/zenon-network/go-zenon/common/types"
+	"github.com/zenon-network/go-zenon/pow"
 	"github.com/zenon-network/go-zenon/rpc/server"
+	"github.com/zenon-network/go-zenon/vm/embedded/definition"
 	"github.com/zenon-network/go-zenon/wallet"
 )
 
@@ -139,4 +141,52 @@ func BuildSignedSend(keyPair *wallet.KeyPair, to types.Address, amount *big.Int)
 	// docs::end:build-sign-send
 
 	return block
+}
+
+// ListMomentums fetches a page of momentums from the momentum chain.
+func ListMomentums(ctx context.Context, client *server.Client) error {
+	// docs::start:get-momentums
+	var page struct {
+		Count uint64 `json:"count"`
+		List  []struct {
+			Height uint64 `json:"height"`
+			Hash   string `json:"hash"`
+		} `json:"list"`
+	}
+	// pageIndex 0, pageSize 5
+	if err := client.CallContext(ctx, &page, "ledger.getMomentumsByPage", 0, 5); err != nil {
+		return fmt.Errorf("get momentums: %w", err)
+	}
+	for _, m := range page.List {
+		fmt.Printf("momentum %d: %s\n", m.Height, m.Hash)
+	}
+	// docs::end:get-momentums
+
+	return nil
+}
+
+// AttachProofOfWork mines and attaches the proof-of-work nonce a block needs
+// when its fused plasma is insufficient. The difficulty comes from
+// embedded.plasma.getRequiredPoWForAccountBlock for the block being issued.
+func AttachProofOfWork(block *nom.AccountBlock, difficulty *big.Int) {
+	// docs::start:generate-pow
+	block.Difficulty = difficulty.Uint64()
+	dataHash := pow.GetAccountBlockHash(block)
+	// GetPoWNonce blocks while it searches; the time grows with difficulty.
+	nonce := pow.GetPoWNonce(difficulty, dataHash)
+	block.Nonce = nom.DeSerializeNonce(nonce)
+	// docs::end:generate-pow
+}
+
+// EncodeFuse builds the call data for the plasma contract's Fuse method, which
+// locks the QSR sent with the block and grants plasma to the beneficiary.
+func EncodeFuse(beneficiary types.Address) []byte {
+	// docs::start:encode-fuse
+	// Fuse takes the beneficiary address. The QSR to lock is the Amount of the
+	// send block carrying this data, sent to the plasma contract
+	// (types.PlasmaContract) with the QSR token standard.
+	data := definition.ABIPlasma.PackMethodPanic(definition.FuseMethodName, beneficiary)
+	// docs::end:encode-fuse
+
+	return data
 }
