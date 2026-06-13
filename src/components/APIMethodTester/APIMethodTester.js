@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useWebSocket } from '../../contexts/WebSocketContext';
-import { getMethodByName, PARAM_TYPES } from '../../data/apiMethods';
+import { getMethodByName, PARAM_TYPES } from '../../data/openrpcMethods';
 import styles from './styles.module.css';
 
 export default function APIMethodTester({ method, defaultParams = {} }) {
@@ -65,9 +65,10 @@ export default function APIMethodTester({ method, defaultParams = {} }) {
     setResponse(null);
 
     const paramsArray = Object.values(parameters);
+    const wireMethod = methodInfo.wireMethod || method;
 
     try {
-      const result = await sendRequest(method, paramsArray);
+      const result = await sendRequest(wireMethod, paramsArray);
       setResponse(result);
     } catch (err) {
       setError(err.message);

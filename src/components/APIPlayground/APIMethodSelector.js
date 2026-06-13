@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_METHODS } from '../../data/apiMethods';
+import { API_METHODS } from '../../data/openrpcMethods';
 import styles from './styles.module.css';
 
 export default function APIMethodSelector({ selectedMethod, onMethodSelect }) {

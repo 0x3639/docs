@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWebSocket } from '../../contexts/WebSocketContext';
-import { getMethodByName } from '../../data/apiMethods';
+import { getMethodByName } from '../../data/openrpcMethods';
 import APIMethodSelector from './APIMethodSelector';
 import ParameterBuilder from './ParameterBuilder';
 import RequestResponseViewer from './RequestResponseViewer';
@@ -90,17 +90,18 @@ export default function APIPlayground() {
       setResponse(null);
 
       const paramsArray = Object.values(parameters);
+      const wireMethod = getMethodByName(selectedMethod)?.wireMethod || selectedMethod;
       const requestObj = {
         jsonrpc: '2.0',
         id: Date.now(),
-        method: selectedMethod,
+        method: wireMethod,
         params: paramsArray
       };
 
       setRequest(requestObj);
 
       try {
-        const result = await sendRequest(selectedMethod, paramsArray);
+        const result = await sendRequest(wireMethod, paramsArray);
         setResponse(result);
       } catch (err) {
         setResponse({
@@ -210,18 +211,19 @@ export default function APIPlayground() {
 
     // Build params array from parameters object
     const paramsArray = Object.values(parameters);
+    const wireMethod = getMethodByName(selectedMethod)?.wireMethod || selectedMethod;
 
     const requestObj = {
       jsonrpc: '2.0',
       id: Date.now(),
-      method: selectedMethod,
+      method: wireMethod,
       params: paramsArray
     };
 
     setRequest(requestObj);
 
     try {
-      const result = await sendRequest(selectedMethod, paramsArray);
+      const result = await sendRequest(wireMethod, paramsArray);
       setResponse(result);
       
       // Generate clean shareable URL (without response data)

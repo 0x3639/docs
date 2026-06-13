@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMethodByName, PARAM_TYPES } from '../../data/apiMethods';
+import { getMethodByName, PARAM_TYPES } from '../../data/openrpcMethods';
 import styles from './styles.module.css';
 
 export default function ParameterBuilder({ method, parameters, onParametersChange }) {
