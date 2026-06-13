@@ -13,7 +13,8 @@ slug: /reference
   `chain/nom`, `chain/store`, `chain/momentum`, `chain/account`,
   `chain/account/mailbox`, `chain/genesis`, `vm`, `vm/vm_context`,
   `vm/abi`, `vm/constants`, `vm/embedded`, `vm/embedded/definition`,
-  `vm/embedded/implementation`.
+  `vm/embedded/implementation`, `consensus`, `consensus/api`,
+  `consensus/storage`.
 - **OpenRPC spec** (`/openrpc.json`) — machine-readable JSON-RPC API
   description (namespaces covered so far: `ledger`, `embedded.pillar`).
   Pending: `embedded.governance` (not yet in any pinned release).
