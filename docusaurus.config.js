@@ -5,11 +5,20 @@
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
 import {themes as prismThemes} from 'prism-react-renderer';
+import injectSnippets from './src/remark/inject-snippets.mjs';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
+  // Resolve {@inject: examples/<file>#<anchor>} directives from the
+  // compile-tested examples/ module before MDX parsing. Throws (fails the
+  // build) on a missing file or anchor.
+  markdown: {
+    preprocessor: ({filePath, fileContent}) =>
+      injectSnippets(fileContent, filePath),
+  },
+
   title: 'Zenon Network Documentation',
   tagline: 'Network of Momentum Documentation',
   favicon: 'img/favicon.ico',

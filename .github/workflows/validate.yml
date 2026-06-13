@@ -26,5 +26,10 @@ jobs:
             echo "::error::openrpc.json artifacts are stale — run 'npm run gen' and commit the result"
             exit 1
           }
+      - name: Compile example snippets
+        run: |
+          cd examples
+          GOWORK=off go build ./...
+          GOWORK=off go vet ./...
       - name: Build website
         run: npm run build
