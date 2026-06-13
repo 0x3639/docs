@@ -2,7 +2,7 @@
   "openrpc": "1.2.6",
   "info": {
     "title": "Zenon Network JSON-RPC API",
-    "version": "323d40b6825a",
+    "version": "6bed245d1e11",
     "description": "JSON-RPC 2.0 API of go-zenon. Hand-authored from the pinned source (godoc-verified); examples captured from a live public node. Namespaces covered so far: ledger, embedded.pillar."
   },
   "servers": [
