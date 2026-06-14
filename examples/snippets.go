@@ -190,3 +190,40 @@ func EncodeFuse(beneficiary types.Address) []byte {
 
 	return data
 }
+
+// PillarRegistrationCost reads the current QSR cost of registering a new
+// pillar. The ZNN collateral is fixed (15,000 ZNN); the QSR cost rises as more
+// pillars register, so query it rather than hard-coding a value.
+func PillarRegistrationCost(ctx context.Context, client *server.Client) error {
+	// docs::start:pillar-registration-cost
+	var qsrCost string
+	if err := client.CallContext(ctx, &qsrCost, "embedded.pillar.getQsrRegistrationCost"); err != nil {
+		return fmt.Errorf("get pillar registration cost: %w", err)
+	}
+	fmt.Printf("registering a pillar currently costs 15,000 ZNN + %s QSR (smallest unit)\n", qsrCost)
+	// docs::end:pillar-registration-cost
+
+	return nil
+}
+
+// SentinelStatus reads an owner's sentinel registration, if any.
+func SentinelStatus(ctx context.Context, client *server.Client, owner types.Address) error {
+	// docs::start:query-sentinel
+	var sentinel *struct {
+		Owner                 string `json:"owner"`
+		RegistrationTimestamp int64  `json:"registrationTimestamp"`
+		IsRevocable           bool   `json:"isRevocable"`
+		Active                bool   `json:"active"`
+	}
+	if err := client.CallContext(ctx, &sentinel, "embedded.sentinel.getByOwner", owner.String()); err != nil {
+		return fmt.Errorf("get sentinel: %w", err)
+	}
+	if sentinel == nil {
+		fmt.Println("no sentinel registered for this address")
+		return nil
+	}
+	fmt.Printf("sentinel active=%t revocable=%t\n", sentinel.Active, sentinel.IsRevocable)
+	// docs::end:query-sentinel
+
+	return nil
+}
