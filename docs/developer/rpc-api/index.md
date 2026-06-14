@@ -25,7 +25,7 @@ In order to be able to perform calls to the respective `Endpoints`, the `config.
 * [Stats](./core/stats): allows clients to examine stats and other information about the Node
 * [Subscribe](./core/subscribe): allows clients to subscribe to real-time updates
 
-The bash command `znn-cli enableRPC` can be used with the [Dart CLI](/wallet/cli/); it will automatically populate the `config.json` with the necessary information.
+The bash command `znn-cli enableRPC` can be used with the [Dart CLI](/wallet/dart-cli); it will automatically populate the `config.json` with the necessary information.
 
 ## Quick Navigation
 

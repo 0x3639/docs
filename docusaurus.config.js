@@ -34,8 +34,12 @@ const config = {
   organizationName: '0x3639', // Usually your GitHub org/user name.
   projectName: 'docs', // Usually your repo name.
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
+  // Generated package-reference pages (gomarkdoc) contain cross-reference
+  // anchors that do not all resolve; keep these a warning rather than failing
+  // the build on generated content.
+  onBrokenAnchors: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -74,19 +78,6 @@ const config = {
           'go-zenon developer documentation: JSON-RPC reference, package reference, and guides.',
         generateLLMsFullTxt: true,
         includeBlog: false,
-      },
-    ],
-  ],
-
-  themes: [
-    // Offline/local search — no external service required.
-    [
-      '@easyops-cn/docusaurus-search-local',
-      {
-        hashed: true,
-        indexBlog: false,
-        docsRouteBasePath: '/',
-        highlightSearchTermsOnTargetPage: true,
       },
     ],
   ],
@@ -149,7 +140,7 @@ const config = {
             items: [
               {
                 label: 'Intro',
-                to: '/intro',
+                to: '/intro/getting-started',
               },
             ],
           },
@@ -177,10 +168,6 @@ const config = {
           {
             title: 'More',
             items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
               {
                 label: 'GitHub',
                 href: 'https://github.com/0x3639/docs',
