@@ -63,6 +63,34 @@ const config = {
     ],
   ],
 
+  plugins: [
+    // Generates /llms.txt (index) and /llms-full.txt (concatenated content)
+    // so AI agents can consume the docs. See AGENTS.md.
+    [
+      'docusaurus-plugin-llms',
+      {
+        title: 'Zenon Network Documentation',
+        description:
+          'go-zenon developer documentation: JSON-RPC reference, package reference, and guides.',
+        generateLLMsFullTxt: true,
+        includeBlog: false,
+      },
+    ],
+  ],
+
+  themes: [
+    // Offline/local search — no external service required.
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        indexBlog: false,
+        docsRouteBasePath: '/',
+        highlightSearchTermsOnTargetPage: true,
+      },
+    ],
+  ],
+
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
