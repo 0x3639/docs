@@ -174,7 +174,7 @@ export const getMethodByName = (methodName) => {
 // table; kept here so the components have a single import.
 export const PARAM_TYPES = {
   address: {
-    validate: (value) => /^z1[a-z0-9]{39}$/.test(value),
+    validate: (value) => /^z1[a-z0-9]{38}$/.test(value),
     placeholder: 'z1qzal6c5s9rjnnxd2z7dvdhjxpmmj4fmw56a0mz',
     description: 'Zenon address (z1...)',
   },
@@ -194,7 +194,7 @@ export const PARAM_TYPES = {
     description: 'Text string',
   },
   tokenStandard: {
-    validate: (value) => /^zts1[a-z0-9]{15}$/.test(value),
+    validate: (value) => /^zts1[a-z0-9]{22}$/.test(value),
     placeholder: 'zts1znnxxxxxxxxxxxxx9z4ulx',
     description: 'Token standard (zts1...)',
   },

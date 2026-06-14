@@ -12,7 +12,8 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "conformance": "node scripts/conformance-test.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.1",
@@ -28,6 +29,7 @@
     "@docusaurus/module-type-aliases": "3.10.1",
     "@docusaurus/types": "3.10.1",
     "@open-rpc/schema-utils-js": "2.2.1",
+    "ajv": "^8.20.0",
     "yaml": "2.9.0"
   },
   "browserslist": {

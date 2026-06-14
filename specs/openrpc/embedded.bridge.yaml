@@ -432,9 +432,14 @@ schemas:
         minimum: 0
         description: Total number of matching requests.
       list:
-        type: array
-        items:
-          $ref: "#/components/schemas/BridgeWrapTokenRequest"
+        description: >-
+          The page of requests. An empty result serializes as null (a nil
+          slice), not an empty array.
+        oneOf:
+          - type: array
+            items:
+              $ref: "#/components/schemas/BridgeWrapTokenRequest"
+          - type: "null"
     required: [count, list]
 
   BridgeUnwrapTokenRequest:

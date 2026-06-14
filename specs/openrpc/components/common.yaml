@@ -15,7 +15,7 @@
 schemas:
   Address:
     type: string
-    pattern: "^z1[023456789acdefghjklmnpqrstuvwxyz]{37}$"
+    pattern: "^z1[023456789acdefghjklmnpqrstuvwxyz]{38}$"
     description: >-
       Zenon address in Bech32 form with human-readable part "z1".
       Embedded-contract addresses are fixed system addresses (for example
@@ -47,7 +47,7 @@ schemas:
 
   TokenStandard:
     type: string
-    pattern: "^zts1[023456789acdefghjklmnpqrstuvwxyz]{20}$"
+    pattern: "^zts1[023456789acdefghjklmnpqrstuvwxyz]{22}$"
     description: >-
       Zenon Token Standard (ZTS) identifier in Bech32 form with
       human-readable part "zts". ZNN is zts1znnxxxxxxxxxxxxx9z4ulx, QSR is
